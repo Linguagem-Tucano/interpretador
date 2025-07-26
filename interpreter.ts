@@ -1,26 +1,7 @@
 import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, StringList, NumberList, RealList, BooleanList } from "./values.ts";
 import { ArgumentExpr, AssignmentExpr, BinaryExpr, ComparatorExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, ListIdentifier, ListLiteral, NumericLiteral, OutputStmt, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
 import Environment from "./environment.ts";
-let runningUnder = "repl";
 
-export function setRunningUnder(value: string) {
-    runningUnder = value;
-}
-
-function getPromptUserFunction(): (promptText: string, callback: (input: string) => void) => void {
-    if (runningUnder === "repl") {
-        return promptUser;
-    } else if (runningUnder === "website") {
-        return (promptText: string, callback: (input: string) => void) => {
-            // In a website context, you might want to use a custom input method
-            // For example, you could use a modal or a custom input field
-            // Here, we will just simulate it with a prompt for simplicity
-            return prompt(promptText, callback);
-        };
-    } else {
-        throw new Error("Contexto desconhecido: " + runningUnder);
-    }
-}
 
 export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
     switch (astNode.kind) {
@@ -77,12 +58,12 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
 }
 
 function evaluateWhileStmt(node: WhileStmt, env:Environment):RuntimeVal {
-    let comparison = node.comparison;
-    let newEnv = new Environment(env);
+    const comparison = node.comparison;
+    const newEnv = new Environment(env);
 
     let evaluated = evaluate(comparison, newEnv) as BooleanVal;
 
-    let body = node.body;
+    const body = node.body;
 
     let ending = {} as RuntimeVal;
 
@@ -97,12 +78,12 @@ function evaluateWhileStmt(node: WhileStmt, env:Environment):RuntimeVal {
 }
 
 function evaluateUntilStmt(node: UntilStmt, env:Environment):RuntimeVal {
-    let comparison = node.comparison;
-    let newEnv = new Environment(env);
+    const comparison = node.comparison;
+    const newEnv = new Environment(env);
 
     let evaluated = evaluate(comparison, newEnv) as BooleanVal;
 
-    let body = node.body;
+    const body = node.body;
 
     let ending = {} as RuntimeVal;
 
@@ -117,10 +98,10 @@ function evaluateUntilStmt(node: UntilStmt, env:Environment):RuntimeVal {
 }
 
 function evaluateListIdentifier(node: ListIdentifier, env:Environment): RuntimeVal {
-    let symbol = node.symbol;
+    const symbol = node.symbol;
     if (env.hasVar(symbol)) {
-        let list = env.lookupVar(symbol) as StringList;
-        let lookup = evaluate(node.lookup,env) as NumberVal;
+        const list = env.lookupVar(symbol) as StringList;
+        const lookup = evaluate(node.lookup,env) as NumberVal;
         return list.value[lookup.value];
     } else {
         throw new Error("Lista não existe");
@@ -128,13 +109,13 @@ function evaluateListIdentifier(node: ListIdentifier, env:Environment): RuntimeV
 }
 
 function evaluateListLiteral(node: ListLiteral, env:Environment): RuntimeVal {
-    let values = node.values;
+    const values = node.values;
     let type = null;
-    let list = [];
+    const list = [];
     for (let i=0; i<=values.length-1; i++) {
-        let value = values[i];
+        const value = values[i];
 
-        let v = evaluate(value,env);
+        const v = evaluate(value,env);
         if (type==null) {
             type=v.type;
         }
@@ -226,8 +207,8 @@ function evaluateForStmt(node: ForStmt, env:Environment):RuntimeVal {
 
 function evaluateForEachStmt(node: ForEachStmt, env:Environment):RuntimeVal {
     
-    let lista = node.list.symbol;
-    let identifier = node.variable.symbol;
+    const lista = node.list.symbol;
+    const identifier = node.variable.symbol;
 
     let list;
     //check list
@@ -237,10 +218,10 @@ function evaluateForEachStmt(node: ForEachStmt, env:Environment):RuntimeVal {
         throw new Error("Lista não existe");
     }
 
-    let val = 0
-    let valMax = list.value.length-1;
+    const val = 0
+    const valMax = list.value.length-1;
 
-    let startItem = list.value[val];
+    const startItem = list.value[val];
     
     if (!env.hasVar(identifier)) {
         env.declareVar(identifier,startItem,startItem.type);
@@ -248,11 +229,11 @@ function evaluateForEachStmt(node: ForEachStmt, env:Environment):RuntimeVal {
         env.assignVar(identifier, startItem);
     }
 
-    let body = node.body;
+    const body = node.body;
     let ending = {} as RuntimeVal;
-    let newEnv = new Environment(env);
+    const newEnv = new Environment(env);
     for (let val=0; val<=valMax; val+=1) {
-        let item = list.value[val];
+        const item = list.value[val];
         env.assignVar(identifier, item);
         
         for (let index = 0; index < body.length; index++) {
@@ -522,7 +503,7 @@ function evaluateBinaryExpr(binop: BinaryExpr, env: Environment):RuntimeVal {
         const r = rightHand as StringVal;
         const v = l.value + r.value;
         const res = {type:"StringVal", value:v} as StringVal;
-        let result = res;
+        const result = res;
         return result;
     } else if (binop.operator=="e" || binop.operator=="ou" || binop.operator=="xou") {
         const v = evaluateLogicalBinaryExpr(leftHand, rightHand, binop.operator);
@@ -537,8 +518,8 @@ function evaluateBinaryExpr(binop: BinaryExpr, env: Environment):RuntimeVal {
             throw new Error("Tentativa de fazer operação numérica com valor não numérico: "+rightHand.type);
         }
 
-        let left = leftHand as RealVal;
-        let right = rightHand as RealVal;
+        const left = leftHand as RealVal;
+        const right = rightHand as RealVal;
         const v = evaluateNumericBinaryExpr(left, right, binop.operator);
         
         let result;

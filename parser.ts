@@ -273,7 +273,7 @@ export default class Parser {
         
         this.eatOnly(TokenType.Reserved,"Esperava um 'de'");
         
-        let lista = {symbol:this.eatOnly(TokenType.Identifier,"Esperava o nome de uma lista").value} as Identifier;
+        const lista = {symbol:this.eatOnly(TokenType.Identifier,"Esperava o nome de uma lista").value} as Identifier;
         
         this.eatOnly(TokenType.RParen,"Esperava um )");
         
@@ -301,9 +301,9 @@ export default class Parser {
 
     private parseForNormalStmt(variable:Identifier): Expr {
         this.eatOnly(TokenType.Assignment,"Esperava um =");
-        let startIndex = this.parseExpr();
+        const startIndex = this.parseExpr();
         this.eatOnly(TokenType.Virgula,"Esperava uma virgula");
-        let endIndex = this.parseExpr();
+        const endIndex = this.parseExpr();
         this.eatOnly(TokenType.RParen,"Esperava um )");
         if (this.eatOnly(TokenType.Reserved,"Esperava um 'faca'").value!="faca") {
             throw new Error("Esperava um 'faca'");
@@ -549,7 +549,7 @@ export default class Parser {
     private parseListExpr(): Expr {
         if (this.at().type == TokenType.LColch) {
             this.advance();
-            let list = [] as Expr[];
+            const list = [] as Expr[];
             while (this.at().type!=TokenType.RColch && this.at().type!=TokenType.EOF) {
                 if (this.at().type!=TokenType.Virgula) {
                     const s = this.parseStmt();
@@ -669,11 +669,11 @@ export default class Parser {
 
         switch (tk) {
             case TokenType.Identifier:
-                let id = this.advance().value;
+                const id = this.advance().value;
                 if (this.at().type==TokenType.LColch) {
                     this.advance();
 
-                    let lookup = this.parseStmt();
+                    const lookup = this.parseStmt();
                     this.eatOnly(TokenType.RColch, "Esperava um ]");
                     return {kind:"ListIdentifier",symbol:id,lookup:lookup} as ListIdentifier;
                 }

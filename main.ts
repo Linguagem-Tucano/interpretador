@@ -1,17 +1,7 @@
 import Parser from "./parser.ts";
-import { evaluate, setRunningUnder } from "./interpreter.ts";
+import { evaluate} from "./interpreter.ts";
 import Environment from "./environment.ts";
 import { StringVal } from "./values.ts";
-import { FuncDecl } from "./ast.ts";
-
-//if (Deno.args.length>=1) {
-//    main();
-//} else {
-//    repl();
-//}
-
-//repl();
-//main();
 
 export function repl() {
     const parser = new Parser();
@@ -26,12 +16,11 @@ export function repl() {
             Deno.exit(0);
         }
 
-        let program;
-        program = parser.produceAST(input);
+        const program = parser.produceAST(input);
 
         let result;
         try {
-            setRunningUnder("repl");
+    
             result = evaluate(program,env);
         } catch (error) {
             console.error(error);
@@ -52,7 +41,6 @@ export function interpret(text:string) {
         program = parser.produceAST(code);
         //console.log(program);
         try {
-            setRunningUnder("website");
             return evaluate(program,env);
         } catch (error) {
             console.error(error);
@@ -66,8 +54,10 @@ export function interpret(text:string) {
 }
 try {
     if (Deno.args.length>=1) {
+        // idk man just suck it up
     } else {
         repl();
     }
-} catch (error) {
+} catch(_error) {
+    //Empty catch to avoid error when running in browser
 }
