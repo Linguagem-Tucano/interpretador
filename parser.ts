@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-case-declarations
-import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, EndScope, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, ClassAtribute, ClassConstructor, ClassFunction, ClassVis} from "./ast.ts";
+import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, EndScope, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, ClassAtribute, ClassConstructor, ClassFunction, ClassVis, AttributeLookup} from "./ast.ts";
 import { tokenize, Token, TokenType} from "./lexer.ts";
 
 export default class Parser {
@@ -101,6 +101,7 @@ export default class Parser {
     
         while (this.at().type !== TokenType.RChave && this.at().type !== TokenType.EOF) {
             // visibilidade
+            console.log(this.at())
             let visibility = ClassVis.Public;
             if (
                 this.at().type === TokenType.Reserved &&
@@ -159,14 +160,10 @@ export default class Parser {
         this.advance(); // consume '}'
     
         if (!constructor) throw new Error("Classe precisa ter um construtor");
-    
-        return {
-            kind: "Class",
-            atributes,
-            constructor,
-            functions,
-            identifier,
-        } as Class;
+        
+        const ret = {kind:"Class", identifier, atributes, constructor, functions} as Class;
+
+        return ret;
     }
     
     private parseConstructor(): FuncDecl {
@@ -577,10 +574,10 @@ export default class Parser {
     private parseFuncCall(): Expr {
         if (this.at().type==TokenType.Identifier) {
             const identifier = this.at().value;
-            if (this.peek().type==TokenType.Ponto) {
-                this.advance();
-
-            }
+            //if (this.peek().type==TokenType.Ponto) {
+            //    this.advance();
+            //    
+            //}
             if (this.peek().type==TokenType.LParen) {
                 this.advance(); //go past identifier
                 this.advance(); //go past (
@@ -596,6 +593,16 @@ export default class Parser {
                 this.advance(); //go past the )
                 return {kind:"FuncCall",identifier,args} as FuncCall
             }
+        }
+        return this.parseAttributeLookup();
+    }
+
+    private parseAttributeLookup(): Expr {
+        if (this.at().type == TokenType.Identifier && this.peek().type == TokenType.Ponto) {
+            const symbol = this.advance().value; // advance past identifier
+            this.advance(); // advance past dot
+            const lookup = this.parseStmt(); // parse the expression after the dot
+            return {kind:"AttributeLookup",symbol,lookup} as AttributeLookup;
         }
         return this.parseComparatorExpr();
     }

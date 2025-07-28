@@ -8,7 +8,8 @@ export type ValueType =
 | "NumberList"
 | "RealList"
 | "StringList"
-| "BooleanList";
+| "BooleanList"
+| "ObjectVal";
 
 
 export interface RuntimeVal {
@@ -18,7 +19,7 @@ export interface RuntimeVal {
 
 export interface NullVal extends RuntimeVal {
     type: "NullVal";
-    value: "null";
+    value: "nulo";
 }
 
 export interface NumberVal extends RuntimeVal {
@@ -62,5 +63,5 @@ export interface BooleanList extends RuntimeVal {
 }
 
 export function MK_NULL():NullVal {
-    return {type:"NullVal",value:"null"} as NullVal;
+    return {type:"NullVal",value:"nulo"} as NullVal;
 }

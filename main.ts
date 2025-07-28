@@ -2,6 +2,7 @@ import Parser from "./parser.ts";
 import { evaluate} from "./interpreter.ts";
 import Environment from "./environment.ts";
 import { StringVal } from "./values.ts";
+import { Program } from "./ast.ts";
 
 export function repl() {
     const parser = new Parser();
@@ -16,7 +17,13 @@ export function repl() {
             Deno.exit(0);
         }
 
-        const program = parser.produceAST(input);
+        let program = {} as Program;
+        try {
+            program = parser.produceAST(input);
+            
+        } catch (error) {
+            console.error("Erro de sintaxe: " + error);
+        }
 
         let result;
         try {

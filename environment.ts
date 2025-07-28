@@ -1,4 +1,4 @@
-import { FuncDecl } from "./ast.ts";
+import { Class, FuncDecl } from "./ast.ts";
 import { BooleanVal, MK_NULL, RuntimeVal, ValueType } from "./values.ts";
 
 function setupScope(env: Environment) {
@@ -11,12 +11,16 @@ export default class Environment {
     private parent?: Environment;
     private variables: Map<string,RuntimeVal>;
     private functions: Map<string,FuncDecl>;
+    private classes: Map<string,Class>;
+    private classInstances: Map<string,Class>;
 
     constructor (parentENV?: Environment) {
         const global = parentENV==undefined ? true : false;
         this.parent=parentENV;
         this.variables = new Map();
         this.functions = new Map();
+        this.classes = new Map();
+        this.classInstances = new Map();
         if (global) {
             setupScope(this);
         }
@@ -94,4 +98,32 @@ export default class Environment {
         this.functions.set(identifier,func);
         return func
     }
+
+    public declareClass(classDecl:Class) {
+        const identifier = classDecl.identifier;
+        if (this.classes.has(identifier)) {throw "Classe "+identifier+" já declarada";}
+        this.classes.set(identifier,classDecl);
+        return classDecl;
+    }
+
+    public resolveClass(classname:string): Class {
+        if (this.classes.has(classname)) {
+            return this.classes.get(classname) as Class;
+        }
+        if (this.parent==undefined) {
+            throw "Impossível resolver classe "+classname+" pois ela não existe."
+        }
+        return this.parent.resolveClass(classname);
+    }
+
+    public resolveObjectInstance(objectname:string): Class {
+        if (this.classInstances.has(objectname)) {
+            return this.classInstances.get(objectname) as Class;
+        }
+        if (this.parent==undefined) {
+            throw "Impossível resolver objeto "+objectname+" pois ele não existe."
+        }
+        return this.parent.resolveObjectInstance(objectname);
+    }
+
 }

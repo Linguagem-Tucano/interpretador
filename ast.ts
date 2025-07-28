@@ -37,11 +37,14 @@ export type nodeType =
 | "InputStmt"
 | "OutputStmt"
 
+| "AttributeLookup"
 
 | "Class"
 | "ClassAtribute"
 | "ClassConstructor"
-| "ClassFunction";
+| "ClassFunction"
+
+| "ObjectDecl";
 
 export enum ClassVis {
     Private,
@@ -178,6 +181,12 @@ export interface ComparatorExpr extends Expr {
 export interface Identifier extends Expr {
     kind: "Identifier";
     symbol: string;
+}
+
+export interface AttributeLookup extends Expr {
+    kind: "AttributeLookup";
+    symbol: string;
+    lookup: Stmt;
 }
 
 export interface StringLiteral extends Expr {

@@ -1,5 +1,5 @@
 import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, StringList, NumberList, RealList, BooleanList } from "./values.ts";
-import { ArgumentExpr, AssignmentExpr, BinaryExpr, ComparatorExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, ListIdentifier, ListLiteral, NumericLiteral, OutputStmt, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
+import { ArgumentExpr, AssignmentExpr, BinaryExpr, Class, ComparatorExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, ListIdentifier, ListLiteral, NumericLiteral, OutputStmt, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
 import Environment from "./environment.ts";
 
 
@@ -45,6 +45,8 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return evaluateFuncDecl(astNode as FuncDecl, env);
         case "FuncCall":
             return evaluateFuncCall(astNode as FuncCall, env);
+        case "Class":
+            return evaluateClassDecl(astNode as Class, env);
         case "OutputStmt":
             return evaluateOutputStmt(astNode as OutputStmt, env);
         case "InputStmt":
@@ -55,6 +57,12 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             console.error("Erro de interpretação! Tipo inesperado: ",astNode);
             return MK_NULL();
     }
+}
+
+function evaluateClassDecl(node: Class, env: Environment): RuntimeVal {
+    //declare class in environment
+    env.declareClass(node);
+    return MK_NULL();
 }
 
 function evaluateWhileStmt(node: WhileStmt, env:Environment):RuntimeVal {
@@ -584,10 +592,13 @@ function appendOutput(text: string) {
 
 function evaluateProgram(program: Program, env: Environment):RuntimeVal {
     outputBuffer = "";
-    let lastEvaluated: RuntimeVal = {type:"NullVal",value:"null"} as NullVal;
+    let lastEvaluated: RuntimeVal = {type:"NullVal",value:"nulo"} as NullVal;
     for (const statement of program.body) {
         lastEvaluated = evaluate(statement,env);
     }
-    console.log(outputBuffer);
+
+    if (outputBuffer!="") 
+        console.log(outputBuffer);
+
     return lastEvaluated;
 }
