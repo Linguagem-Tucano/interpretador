@@ -38,6 +38,7 @@ export type nodeType =
 | "OutputStmt"
 
 | "AttributeLookup"
+| "CallLookup"
 
 | "Class"
 | "ClassAtribute"
@@ -180,7 +181,14 @@ export interface Identifier extends Expr {
 export interface AttributeLookup extends Expr {
     kind: "AttributeLookup";
     symbol: string;
-    lookup: Stmt;
+    lookup: string;
+}
+
+export interface CallLookup extends Expr {
+    kind: "CallLookup";
+    symbol: string;
+    call: string;
+    args: Expr[];
 }
 
 export interface StringLiteral extends Expr {

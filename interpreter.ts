@@ -1,5 +1,5 @@
 import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, StringList, NumberList, RealList, BooleanList, ObjectVal } from "./values.ts";
-import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, Class, ComparatorExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
+import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
 import Environment from "./environment.ts";
 
 
@@ -59,6 +59,8 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return evaluateNewObjectExpr(astNode as NewObjectExpr, env);
         case "AttributeLookup":
             return evaluateAttributeLookup(astNode as AttributeLookup, env);
+        case "CallLookup":
+            return evaluateCallLookup(astNode as CallLookup, env);
         default:
             console.error("Erro de interpretação! Tipo inesperado: ",astNode);
             return MK_NULL();
@@ -68,9 +70,19 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
 function evaluateAttributeLookup(node: AttributeLookup, env: Environment): RuntimeVal {
     const obj = env.lookupVar(node.symbol) as ObjectVal;
     const objEnv = obj.env;
-    const ret = evaluate(node.lookup, objEnv); //descobri
+    //const ret = evaluate(node.lookup, objEnv); //descobri
+    const ret = objEnv.lookupVar(node.lookup);
     //console.log(ret);
     return ret; 
+}
+
+function evaluateCallLookup(node: CallLookup, env:Environment): RuntimeVal {
+    const obj = env.lookupVar(node.symbol) as ObjectVal;
+    const objEnv = obj.env;
+
+    const c = {identifier: node.call, args: node.args, kind:"FuncCall"} as FuncCall;
+    const ret = evaluateFuncCall(c, objEnv);
+    return ret;
 }
 
 function evaluateNewObjectExpr(node: NewObjectExpr, env:Environment): RuntimeVal {
@@ -414,10 +426,14 @@ function evaluateVarDecl(variable:VarDecl,env:Environment):RuntimeVal {
 }
 
 function evaluateVarAssignment(node:AssignmentExpr,env:Environment):RuntimeVal {
-    if (node.assigne.kind!="Identifier") {throw "Erro: nome de variavel esperado."}
-    const varname = (node.assigne as Identifier);
+    if (node.assigne.kind === "AttributeLookup") { return evaluateAttributeAssignment(node, env); }
+
+    if (node.assigne.kind!="Identifier") { throw "Erro: nome de variavel esperado."; }
+
+    const varname = node.assigne as Identifier;
     
     let valueside = evaluate(node.value,env);
+    
 
     const vartype = (env.lookupVar(varname.symbol).type as ValueType as string);
     let assigneetype = valueside.type;
@@ -437,6 +453,35 @@ function evaluateVarAssignment(node:AssignmentExpr,env:Environment):RuntimeVal {
 
     if (assigneetype==vartype) {
         return env.assignVar(varname.symbol,valueside);
+    } else {throw "Erro: tipo de variavel errado. Esperava: "+vartype+" // Recebi: "+assigneetype}
+}
+
+function evaluateAttributeAssignment(node:AssignmentExpr, env:Environment): RuntimeVal {
+    const attLookup = node.assigne as AttributeLookup;
+    const obj = env.lookupVar(attLookup.symbol) as ObjectVal;
+    const objEnv = obj.env;
+    const varname = attLookup.lookup;
+
+    let valueside = evaluate(node.value, env);
+
+    const vartype = (objEnv.lookupVar(varname).type as ValueType as string);
+    let assigneetype = valueside.type;
+
+    switch (vartype) {
+        case "NumberVal":            
+            if (assigneetype=="RealVal") {
+                assigneetype="NumberVal"; 
+                (valueside as NumberVal).value = Math.floor((valueside as NumberVal).value);
+                valueside.type=assigneetype;
+            }
+            break;
+        case "RealVal":
+            if (assigneetype=="NumberVal") {assigneetype="RealVal"; valueside = (valueside as RealVal)}
+            break;
+    }
+
+    if (assigneetype==vartype) {
+        return objEnv.assignVar(varname,valueside);
     } else {throw "Erro: tipo de variavel errado. Esperava: "+vartype+" // Recebi: "+assigneetype}
 }
 

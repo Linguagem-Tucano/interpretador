@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-case-declarations
-import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, EndScope, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr} from "./ast.ts";
+import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, EndScope, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup} from "./ast.ts";
 import { tokenize, Token, TokenType} from "./lexer.ts";
 
 export default class Parser {
@@ -136,7 +136,6 @@ export default class Parser {
         this.advance(); // consume '}'
         
         const ret = {kind:"Class", identifier, body} as Class;
-
         return ret;
     }
     
@@ -656,14 +655,58 @@ export default class Parser {
         return left; 
     }
 
+    //private parseAttributeLookup(): Expr {
+    //    if (this.at().type == TokenType.Identifier && this.peek().type == TokenType.Ponto) {
+    //        const symbol = this.advance().value; // advance past identifier
+    //        this.advance(); // advance past dot
+    //        const lookup = this.parseStmt(); // parse the expression after the dot
+    //        return {kind:"AttributeLookup",symbol,lookup} as AttributeLookup;
+    //    }
+    //    return this.parsePrimaryExpr();
+    //}
+
     private parseAttributeLookup(): Expr {
-        if (this.at().type == TokenType.Identifier && this.peek().type == TokenType.Ponto) {
-            const symbol = this.advance().value; // advance past identifier
-            this.advance(); // advance past dot
-            const lookup = this.parseStmt(); // parse the expression after the dot
-            return {kind:"AttributeLookup",symbol,lookup} as AttributeLookup;
+        let expr = this.parsePrimaryExpr();
+        
+        if (expr.kind!="Identifier") { return expr; }
+        const newexpr = expr as Identifier
+        let property = "";
+        while (true) {
+            if (this.at().type == TokenType.Ponto) {
+                this.advance(); // go past .
+                property = this.eatOnly(TokenType.Identifier, "Expected property name after '.'").value;
+                expr = {
+                    kind: "AttributeLookup",
+                    symbol: newexpr.symbol,
+                    lookup: property
+                } as AttributeLookup;
+
+            } else if (this.at().type == TokenType.LParen) {
+                this.advance();
+
+                const args = [] as Expr[];
+                while(this.at().type!=TokenType.RParen && this.at().type!=TokenType.EOF) {
+                    if (this.at().type!=TokenType.Virgula) {
+                        const s = this.parseStmt();
+                        args.push(s);
+                    } else {
+                        this.advance();
+                    }
+                }
+                this.advance(); //go past the )
+                expr = {
+                    kind: "CallLookup",
+                    symbol: newexpr.symbol,
+                    call: property,
+                    args
+                } as CallLookup;
+
+            } else {
+                break;
+            }
         }
-        return this.parsePrimaryExpr();
+
+        return expr;
     }
 
 

@@ -21,6 +21,7 @@ export function repl() {
         try {
             program = parser.produceAST(input);
             
+            
         } catch (error) {
             console.error("Erro de sintaxe: " + error);
         }
