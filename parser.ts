@@ -86,6 +86,7 @@ export default class Parser {
                 case "novo":
                     return this.parseNewObjectExpr();
                 case "isso":
+                    this.advance();
                     return {kind:"ObjectLiteral", className:this.insideClassName} as ObjectLiteral;
                 default:
                     return this.parseExpr();
@@ -178,6 +179,7 @@ export default class Parser {
     
         const body: Stmt[] = [];
         while (this.at().type !== TokenType.RChave && this.at().type !== TokenType.EOF) {
+            console.log(this.at());
             body.push(this.parseStmt());
         }
     
