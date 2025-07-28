@@ -67,7 +67,8 @@ export const reservedWords = [
     "privado",
     "protegido",
     "publico",
-    "novo"
+    "novo",
+    "isso"
 ];
 
 const binaryOperators = [

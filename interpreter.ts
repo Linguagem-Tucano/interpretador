@@ -1,5 +1,5 @@
-import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, StringList, NumberList, RealList, BooleanList } from "./values.ts";
-import { ArgumentExpr, AssignmentExpr, BinaryExpr, Class, ComparatorExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, ListIdentifier, ListLiteral, NumericLiteral, OutputStmt, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
+import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, StringList, NumberList, RealList, BooleanList, ObjectVal } from "./values.ts";
+import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, Class, ComparatorExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
 import Environment from "./environment.ts";
 
 
@@ -11,6 +11,8 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return { value:(astNode as StringLiteral).value, type:"StringVal" } as StringVal;
         case "RealLiteral":
             return { value:(astNode as RealLiteral).value, type:"RealVal" } as RealVal;
+        case "ObjectLiteral":
+            return {className:(astNode as ObjectLiteral).className, value:"Objeto da classe "+(astNode as ObjectLiteral).className, env, type:"ObjectVal"} as ObjectVal;
         case "ListLiteral":
             return evaluateListLiteral(astNode as ListLiteral, env);
         case "ListIdentifier":
@@ -53,10 +55,41 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return evaluateInputStmt(astNode as InputStmt, env);
         case "ReturnExpr":
             return evaluateReturnExpr(astNode as ReturnExpr, env);
+        case "NewObjectExpr":
+            return evaluateNewObjectExpr(astNode as NewObjectExpr, env);
+        case "AttributeLookup":
+            return evaluateAttributeLookup(astNode as AttributeLookup, env);
         default:
             console.error("Erro de interpretação! Tipo inesperado: ",astNode);
             return MK_NULL();
     }
+}
+
+function evaluateAttributeLookup(node: AttributeLookup, env: Environment): RuntimeVal {
+    const obj = env.lookupVar(node.symbol) as ObjectVal;
+    const objEnv = obj.env;
+    const ret = evaluate(node.lookup, objEnv);
+    return ret; 
+}
+
+function evaluateNewObjectExpr(node: NewObjectExpr, env:Environment): RuntimeVal {
+    const nodeClass = env.resolveClass(node.class);
+    
+    const body = nodeClass.body;
+    
+    const objectEnv = new Environment(env);
+
+    for (let i = 0; i < body.length; i++) {
+        const stmt = body[i];
+        evaluate(stmt, objectEnv);
+    }
+    
+    const args = node.args
+    const identifier = "construtor"
+
+    const call = {kind: "FuncCall", args, identifier} as FuncCall
+
+    return evaluateFuncCall(call, objectEnv);
 }
 
 function evaluateClassDecl(node: Class, env: Environment): RuntimeVal {
@@ -356,7 +389,7 @@ function evaluateVarDecl(variable:VarDecl,env:Environment):RuntimeVal {
             type="BooleanVal";
             break;
         case "var":
-            type=assignedtype;
+            type = assignedtype; //should work :3
             break;
         case "int[]":
             type="NumberList";

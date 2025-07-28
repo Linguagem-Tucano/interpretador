@@ -44,13 +44,8 @@ export type nodeType =
 | "ClassConstructor"
 | "ClassFunction"
 
-| "ObjectExpr";
-
-export enum ClassVis {
-    Private,
-    Protected,
-    Public
-}
+| "ObjectLiteral"
+| "NewObjectExpr";
 
 export interface Stmt {
     kind: nodeType;
@@ -64,24 +59,19 @@ export interface Program extends Stmt {
 export interface Class extends Stmt {
     kind: "Class";
     identifier: string;
-    atributes: ClassAtribute[];
-    constructor: ClassConstructor;
-    functions: ClassFunction[];
+    body: Stmt[];
     parent?: string; // Nome da classe pai, se houver
 }
 
-export interface ObjectExpr extends Stmt {
-    kind: "ObjectExpr";
-    identifier: string;
-    atributes: ClassAtribute[];
-    functions: ClassFunction[];
+export interface NewObjectExpr extends Stmt {
+    kind: "NewObjectExpr";
     class: string;
+    args: Expr[];
 }
 
-export interface ClassAtribute extends Stmt {
-    kind: "ClassAtribute";
-    visibility: ClassVis;
-    identifier: Identifier;
+export interface ObjectLiteral extends Expr {
+    kind: "ObjectLiteral";
+    className: string;
 }
 
 export interface ClassConstructor extends Stmt {
@@ -89,11 +79,6 @@ export interface ClassConstructor extends Stmt {
     function: FuncDecl;
 }
 
-export interface ClassFunction extends Stmt {
-    kind: "ClassFunction";
-    function: FuncDecl;
-    visibility: ClassVis;
-}
 
 export interface InputStmt extends Stmt {
     kind: "InputStmt";

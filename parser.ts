@@ -1,11 +1,12 @@
 // deno-lint-ignore-file no-case-declarations
-import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, EndScope, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, ClassAtribute, ClassConstructor, ClassFunction, ClassVis, AttributeLookup} from "./ast.ts";
+import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, EndScope, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, ObjectLiteral} from "./ast.ts";
 import { tokenize, Token, TokenType} from "./lexer.ts";
 
 export default class Parser {
     private tokens: Token[] = [];
 
     private insideClass = false;
+    private insideClassName = "";
 
     private at():Token {
         return this.tokens[0] as Token;
@@ -80,6 +81,12 @@ export default class Parser {
                     return this.parseUntilStmt();
                 case "classe":
                     return this.parseClassStmt();
+                case "construtor":
+                    return this.parseConstructor();
+                case "novo":
+                    return this.parseNewObjectExpr();
+                case "isso":
+                    return {kind:"ObjectLiteral", className:this.insideClassName} as ObjectLiteral;
                 default:
                     return this.parseExpr();
             }
@@ -88,85 +95,58 @@ export default class Parser {
         }
     }
 
+    private parseNewObjectExpr(): Stmt {
+        this.advance(); // consume 'novo'
+        const className = this.eatOnly(TokenType.Identifier, "Esperava o nome da classe").value;
+        this.eatOnly(TokenType.LParen, "Esperava '(' após o nome da classe");
+        
+        const args: Expr[] = [];
+        while (this.at().type !== TokenType.RParen && this.at().type !== TokenType.EOF) {
+            if (this.at().type == TokenType.Virgula) {
+                this.advance();
+                continue;
+            }
+            args.push(this.parseExpr());
+        }
+        
+        this.eatOnly(TokenType.RParen, "Esperava ')'");
+        
+        return {
+            kind: "NewObjectExpr",
+            class: className,
+            args,
+        } as NewObjectExpr;
+    }
+
     private parseClassStmt(): Stmt {
         this.advance(); // consume 'classe'
-        const atributes: ClassAtribute[] = [];
-        const functions: ClassFunction[] = [];
     
         const identifier = this.eatOnly(TokenType.Identifier, "Esperava o nome da classe").value;
         this.eatOnly(TokenType.LChave, "Esperava '{' após o nome da classe");
     
-        let constructor: ClassConstructor | undefined = undefined;
+        const body = [] as Stmt[];
         this.insideClass = true;
     
         while (this.at().type !== TokenType.RChave && this.at().type !== TokenType.EOF) {
-            // visibilidade
-            console.log(this.at())
-            let visibility = ClassVis.Public;
-            if (
-                this.at().type === TokenType.Reserved &&
-                (this.at().value === "privado" || this.at().value === "protegido" || this.at().value === "publico")
-            ) {
-                const vis = this.advance().value;
-                switch (vis) {
-                    case "privado": visibility = ClassVis.Private; break;
-                    case "protegido": visibility = ClassVis.Protected; break;
-                    case "publico": visibility = ClassVis.Public; break;
-                }
-            }
-        
             // Construtor
-            if (this.at().value === "construtor") {
-                if (constructor) throw new Error("Classe não pode ter dois construtores");
-                constructor = {
-                    kind: "ClassConstructor",
-                    function: this.parseConstructor() as FuncDecl,
-                };
-                continue;
-            }
-        
-            // Função
-            if (this.at().value === "funcao") {
-                const fn = this.parseFuncDecl() as FuncDecl;
-                functions.push({
-                    kind: "ClassFunction",
-                    function: fn,
-                    visibility,
-                });
-                continue;
-            }
-        
-            // Atributo
-            if (
-                this.at().value === "int" || this.at().value === "real" || this.at().value === "caractere" ||
-                this.at().value === "logico" || this.at().value === "var"
-            ) {
-                const decl = this.parseVarDecl() as VarDecl;
-                atributes.push({
-                    kind: "ClassAtribute",
-                    identifier: {
-                        kind: "Identifier",
-                        symbol: decl.identifier,
-                    },
-                    visibility,
-                });
-                continue;
-            }
-        
-            throw new Error("Esperava atributo, função ou construtor dentro de uma classe");
+            const s = this.parseStmt();
+            
+            body.push(s);
         }
     
         this.insideClass = false;
         this.advance(); // consume '}'
-    
-        if (!constructor) throw new Error("Classe precisa ter um construtor");
         
-        const ret = {kind:"Class", identifier, atributes, constructor, functions} as Class;
+        const ret = {kind:"Class", identifier, body} as Class;
 
         return ret;
     }
     
     private parseConstructor(): FuncDecl {
+        if (!this.insideClass) {
+            throw "Um construtor deve estar sempre dentro de uma classe"
+        }
+
         this.advance(); // consume 'construtor'
     
         this.eatOnly(TokenType.LParen, "Esperava '(' após 'construtor'");

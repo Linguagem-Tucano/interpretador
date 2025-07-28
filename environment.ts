@@ -12,7 +12,6 @@ export default class Environment {
     private variables: Map<string,RuntimeVal>;
     private functions: Map<string,FuncDecl>;
     private classes: Map<string,Class>;
-    private classInstances: Map<string,Class>;
 
     constructor (parentENV?: Environment) {
         const global = parentENV==undefined ? true : false;
@@ -20,7 +19,6 @@ export default class Environment {
         this.variables = new Map();
         this.functions = new Map();
         this.classes = new Map();
-        this.classInstances = new Map();
         if (global) {
             setupScope(this);
         }
@@ -115,15 +113,4 @@ export default class Environment {
         }
         return this.parent.resolveClass(classname);
     }
-
-    public resolveObjectInstance(objectname:string): Class {
-        if (this.classInstances.has(objectname)) {
-            return this.classInstances.get(objectname) as Class;
-        }
-        if (this.parent==undefined) {
-            throw "Impossível resolver objeto "+objectname+" pois ele não existe."
-        }
-        return this.parent.resolveObjectInstance(objectname);
-    }
-
 }
