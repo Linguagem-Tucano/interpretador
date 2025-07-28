@@ -68,7 +68,8 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
 function evaluateAttributeLookup(node: AttributeLookup, env: Environment): RuntimeVal {
     const obj = env.lookupVar(node.symbol) as ObjectVal;
     const objEnv = obj.env;
-    const ret = evaluate(node.lookup, objEnv);
+    const ret = evaluate(node.lookup, objEnv); //descobri
+    //console.log(ret);
     return ret; 
 }
 
@@ -78,6 +79,7 @@ function evaluateNewObjectExpr(node: NewObjectExpr, env:Environment): RuntimeVal
     const body = nodeClass.body;
     
     const objectEnv = new Environment(env);
+    objectEnv.declareVar("isso",{type:"ObjectVal", value:"Objeto da classe "+node.class, env:objectEnv} as ObjectVal, "ObjectVal")
 
     for (let i = 0; i < body.length; i++) {
         const stmt = body[i];
@@ -88,7 +90,7 @@ function evaluateNewObjectExpr(node: NewObjectExpr, env:Environment): RuntimeVal
     const identifier = "construtor"
 
     const call = {kind: "FuncCall", args, identifier} as FuncCall
-
+    //console.log(objectEnv);
     return evaluateFuncCall(call, objectEnv);
 }
 
@@ -455,10 +457,11 @@ function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
     //get the body
     const body = func.body;
     let lastRes = MK_NULL() as RuntimeVal;
+    const newEnv = new Environment(env);
     if (args.length>0) {
         //has arguments
         if (passedArgs.length==args.length) {
-            const newEnv = new Environment(env);
+            
             for (let index = 0; index < args.length; index++) {
                 const arg = args[index];
                 const passed = passedArgs[index];
@@ -485,14 +488,14 @@ function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
                     }
                 }    
                 const curr = evaluate(s, newEnv);
-                if (curr.type!="NullVal") {lastRes=curr;}
+                lastRes=curr;
             }
         } else {
             throw "Esperava "+args.length+" argumentos, recebi "+passedArgs.length;
         }
     } else {
         //no arguments
-        const newEnv = new Environment(env);
+        
         for (let index = 0; index < body.length; index++) {
             const s = body[index];    
             if (s.kind=="ReturnExpr") {
@@ -507,7 +510,7 @@ function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
                 }
             }   
             const curr = evaluate(s, newEnv);
-            if (curr.type!="NullVal") {lastRes=curr;} 
+            lastRes=curr;
         }
     }
     return lastRes;
@@ -625,6 +628,7 @@ function appendOutput(text: string) {
 
 function evaluateProgram(program: Program, env: Environment):RuntimeVal {
     outputBuffer = "";
+    //console.log(program.body);
     let lastEvaluated: RuntimeVal = {type:"NullVal",value:"nulo"} as NullVal;
     for (const statement of program.body) {
         lastEvaluated = evaluate(statement,env);

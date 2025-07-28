@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-case-declarations
-import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, EndScope, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, ObjectLiteral} from "./ast.ts";
+import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, EndScope, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr} from "./ast.ts";
 import { tokenize, Token, TokenType} from "./lexer.ts";
 
 export default class Parser {
@@ -162,6 +162,25 @@ export default class Parser {
             if (this.at().type === TokenType.DoisPontos) {
                 this.advance(); // consume ':'
                 argtype = this.eatOnly(TokenType.Reserved, "Esperava tipo").value;
+                switch(argtype) {
+                    case "int":
+                        argtype="NumberVal";
+                        break;
+                    case "caractere":
+                        argtype="StringVal";
+                        break;
+                    case "real":
+                        argtype="RealVal";
+                        break;
+                    case "logico":
+                        argtype="BooleanVal";
+                        break;
+                    case "var":
+                        argtype="any";
+                        break;
+                    default:
+                        throw "Erro: esperava um tipo válido de variável. Recebi: "+argtype;
+                }
             }
         
             args.push({
@@ -572,16 +591,6 @@ export default class Parser {
                 return {kind:"FuncCall",identifier,args} as FuncCall
             }
         }
-        return this.parseAttributeLookup();
-    }
-
-    private parseAttributeLookup(): Expr {
-        if (this.at().type == TokenType.Identifier && this.peek().type == TokenType.Ponto) {
-            const symbol = this.advance().value; // advance past identifier
-            this.advance(); // advance past dot
-            const lookup = this.parseStmt(); // parse the expression after the dot
-            return {kind:"AttributeLookup",symbol,lookup} as AttributeLookup;
-        }
         return this.parseComparatorExpr();
     }
 
@@ -638,13 +647,23 @@ export default class Parser {
     }
 
     private parseExponentialExpr(): Expr {
-        let left = this.parsePrimaryExpr();
+        let left = this.parseAttributeLookup();
         while (this.at().value=="^") {
             const operator = this.advance().value;
             const right = this.parseStmt();
             left = {kind:"BinaryExpr",left,right,operator} as BinaryExpr;
         }
         return left; 
+    }
+
+    private parseAttributeLookup(): Expr {
+        if (this.at().type == TokenType.Identifier && this.peek().type == TokenType.Ponto) {
+            const symbol = this.advance().value; // advance past identifier
+            this.advance(); // advance past dot
+            const lookup = this.parseStmt(); // parse the expression after the dot
+            return {kind:"AttributeLookup",symbol,lookup} as AttributeLookup;
+        }
+        return this.parsePrimaryExpr();
     }
 
 
@@ -663,12 +682,6 @@ export default class Parser {
                     return {kind:"ListIdentifier",symbol:id,lookup:lookup} as ListIdentifier;
                 }
                 return {kind:"Identifier", symbol:id} as Identifier;
-            case TokenType.Reserved:
-                if (this.at().value=="isso") {
-                    this.advance();
-                    return {kind:"ObjectLiteral", className:this.insideClassName} as ObjectLiteral;
-                }
-                //falls through
             case TokenType.Ponto:
                 return {kind:"Dot"} as Dot;
             case TokenType.Number:
