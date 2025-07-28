@@ -44,7 +44,7 @@ export type nodeType =
 | "ClassConstructor"
 | "ClassFunction"
 
-| "ObjectDecl";
+| "ObjectExpr";
 
 export enum ClassVis {
     Private,
@@ -67,6 +67,15 @@ export interface Class extends Stmt {
     atributes: ClassAtribute[];
     constructor: ClassConstructor;
     functions: ClassFunction[];
+    parent?: string; // Nome da classe pai, se houver
+}
+
+export interface ObjectExpr extends Stmt {
+    kind: "ObjectExpr";
+    identifier: string;
+    atributes: ClassAtribute[];
+    functions: ClassFunction[];
+    class: string;
 }
 
 export interface ClassAtribute extends Stmt {
