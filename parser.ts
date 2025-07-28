@@ -85,9 +85,6 @@ export default class Parser {
                     return this.parseConstructor();
                 case "novo":
                     return this.parseNewObjectExpr();
-                case "isso":
-                    this.advance();
-                    return {kind:"ObjectLiteral", className:this.insideClassName} as ObjectLiteral;
                 default:
                     return this.parseExpr();
             }
@@ -666,6 +663,12 @@ export default class Parser {
                     return {kind:"ListIdentifier",symbol:id,lookup:lookup} as ListIdentifier;
                 }
                 return {kind:"Identifier", symbol:id} as Identifier;
+            case TokenType.Reserved:
+                if (this.at().value=="isso") {
+                    this.advance();
+                    return {kind:"ObjectLiteral", className:this.insideClassName} as ObjectLiteral;
+                }
+                //falls through
             case TokenType.Ponto:
                 return {kind:"Dot"} as Dot;
             case TokenType.Number:
