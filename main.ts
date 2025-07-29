@@ -2,7 +2,7 @@ import Parser from "./parser.ts";
 import { evaluate} from "./interpreter.ts";
 import Environment from "./environment.ts";
 import { StringVal } from "./values.ts";
-import { FuncCall, Program, Stmt } from "./ast.ts";
+import { Expr, FuncCall, Program, Stmt, StringLiteral } from "./ast.ts";
 
 
 let env = new Environment();
@@ -65,11 +65,17 @@ export function resetEnv() {
     env = new Environment();
 }
 
-export function callbackFun(funcname:string) {
+export function callbackFun(funcname:string, argumentos:string[]) {
     if (env.hasFunc(funcname)) {
-        let funccall = {kind:"FuncCall", identifier:funcname} as FuncCall
-        let body = [funccall] as Stmt[];
-        let pr = {kind:"Program", body} as Program;
+        const args = [] as Expr[];
+        for (let i = 0; i < argumentos.length; i++) {
+            const arg = argumentos[i];
+            const literal = {kind:"StringLiteral", value:arg} as StringLiteral;
+            args.push(literal);
+        }
+        const funccall = {kind:"FuncCall", identifier:funcname} as FuncCall
+        const body = [funccall] as Stmt[];
+        const pr = {kind:"Program", body, args} as Program;
         evaluate(pr,env);
     }
 }
