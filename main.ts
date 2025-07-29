@@ -73,9 +73,9 @@ export function callbackFun(funcname:string, argumentos:string[]) {
             const literal = {kind:"StringLiteral", value:arg} as StringLiteral;
             args.push(literal);
         }
-        const funccall = {kind:"FuncCall", identifier:funcname} as FuncCall
+        const funccall = {kind:"FuncCall", identifier:funcname, args} as FuncCall
         const body = [funccall] as Stmt[];
-        const pr = {kind:"Program", body, args} as Program;
+        const pr = {kind:"Program", body} as Program;
         evaluate(pr,env);
     }
 }
