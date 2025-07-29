@@ -2,11 +2,13 @@ import Parser from "./parser.ts";
 import { evaluate} from "./interpreter.ts";
 import Environment from "./environment.ts";
 import { StringVal } from "./values.ts";
-import { Program } from "./ast.ts";
+import { FuncCall, Program, Stmt } from "./ast.ts";
+
+
+let env = new Environment();
 
 export function repl() {
     const parser = new Parser();
-    const env = new Environment();
     console.log("Tucano interativo v0.1");
     console.log("Beta público.");
     console.log('Digite "sair" para sair');
@@ -14,7 +16,7 @@ export function repl() {
         const input = prompt("> ");
 
         if (!input || input=="sair") {
-            Deno.exit(0);
+            break;
         }
 
         let program = {} as Program;
@@ -34,14 +36,12 @@ export function repl() {
             console.error(error);
         }
         console.log((result as StringVal).value);
-        //console.log(result);
+        
     }
 }
 
 export function interpret(text:string) {
     const parser = new Parser();
-    const env = new Environment();
-    
     const code = text;
     let program;
 
@@ -60,6 +60,20 @@ export function interpret(text:string) {
     }
     
 }
+
+export function resetEnv() {
+    env = new Environment();
+}
+
+export function callbackFun(funcname:string) {
+    if (env.hasFunc(funcname)) {
+        let funccall = {kind:"FuncCall", identifier:funcname} as FuncCall
+        let body = [funccall] as Stmt[];
+        let pr = {kind:"Program", body} as Program;
+        evaluate(pr,env);
+    }
+}
+
 try {
     if (Deno.args.length>=1) {
         // idk man just suck it up
