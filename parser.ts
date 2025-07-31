@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-case-declarations
 import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, EndScope, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup} from "./ast.ts";
 import { tokenize, Token, TokenType} from "./lexer.ts";
+import { ValueType } from "./values.ts"
 
 export default class Parser {
     private tokens: Token[] = [];
@@ -25,8 +26,7 @@ export default class Parser {
         if (tk?.type==type) {
             return tk
         } else {
-            console.error(err);
-            throw new Error(err);
+            throw err;
         }
     }
 
@@ -49,48 +49,46 @@ export default class Parser {
     }
 
     private parseStmt():Stmt {
-        if (this.at().type==TokenType.Reserved) {
-            switch (this.at().value) {
-                case "var":
-                    return this.parseVarDecl();
-                case "caractere":
-                    return this.parseVarDecl();
-                case "int":
-                    return this.parseVarDecl();
-                case "real":
-                    return this.parseVarDecl();
-                case "logico":
-                    return this.parseVarDecl();
-                case "se":
-                    return this.parseIfStmt();
-                case "funcao":
-                    return this.parseFuncDecl();
-                case "retorna":
-                    return this.parseReturnExpr();
-                case "escreva":
-                    return this.parseOutputStmt();
-                case "escreval":
-                    return this.parseOutputStmt();
-                case "leia":
-                    return this.parseInputStmt();
-                case "para":
-                    return this.parseForStmt();
-                case "enquanto":
-                    return this.parseWhileStmt();
-                case "repita":
-                    return this.parseUntilStmt();
-                case "classe":
-                    return this.parseClassStmt();
-                case "construtor":
-                    return this.parseConstructor();
-                case "novo":
-                    return this.parseNewObjectExpr();
-                default:
-                    return this.parseExpr();
-            }
-        } else {
-            return this.parseExpr();
+        //this is not going to work man...
+        switch (this.at().type) {
+            case TokenType.Var:
+                return this.parseVarDecl();
+            case TokenType.Caractere:
+                return this.parseVarDecl();
+            case TokenType.Int:
+                return this.parseVarDecl();
+            case TokenType.RealWord:
+                return this.parseVarDecl();
+            case TokenType.Logico:
+                return this.parseVarDecl();
+            case TokenType.Se:
+                return this.parseIfStmt();
+            case TokenType.Funcao:
+                return this.parseFuncDecl();
+            case TokenType.Retorna:
+                return this.parseReturnExpr();
+            case TokenType.Escreva:
+                return this.parseOutputStmt();
+            case TokenType.Escreval:
+                return this.parseOutputStmt();
+            case TokenType.Leia:
+                return this.parseInputStmt();
+            case TokenType.Para:
+                return this.parseForStmt();
+            case TokenType.Enquanto:
+                return this.parseWhileStmt();
+            case TokenType.Repita:
+                return this.parseUntilStmt();
+            case TokenType.Classe:
+                return this.parseClassStmt();
+            case TokenType.Construtor:
+                return this.parseConstructor();
+            case TokenType.Novo:
+                return this.parseNewObjectExpr();
+            default:
+                return this.parseExpr();
         }
+        
     }
 
     private parseNewObjectExpr(): Stmt {
@@ -156,29 +154,29 @@ export default class Parser {
             }
         
             const argname = this.eatOnly(TokenType.Identifier, "Esperava nome de argumento").value;
-            let argtype = "any";
+            let argtype = "NullVal" as ValueType;
         
             if (this.at().type === TokenType.DoisPontos) {
                 this.advance(); // consume ':'
-                argtype = this.eatOnly(TokenType.Reserved, "Esperava tipo").value;
-                switch(argtype) {
-                    case "int":
+                const argumenttype = this.advance();
+                switch(argumenttype.type) {
+                    case TokenType.Int:
                         argtype="NumberVal";
                         break;
-                    case "caractere":
+                    case TokenType.Caractere:
                         argtype="StringVal";
                         break;
-                    case "real":
+                    case TokenType.RealWord:
                         argtype="RealVal";
                         break;
-                    case "logico":
+                    case TokenType.Logico:
                         argtype="BooleanVal";
                         break;
-                    case "var":
-                        argtype="any";
+                    case TokenType.Var:
+                        argtype="NullVal";
                         break;
                     default:
-                        throw "Erro: esperava um tipo válido de variável. Recebi: "+argtype;
+                        throw "Esperava um tipo válido de variável. Recebi: "+argtype;
                 }
             }
         
@@ -231,7 +229,9 @@ export default class Parser {
     private parseUntilStmt(): Stmt {
         //repita ate () {}
         this.advance() //go past enquanto
-        if (this.eatOnly(TokenType.Reserved, "Esperava um 'ate'").value != "ate") {throw new Error("Esperava um 'ate'");}
+        
+        this.eatOnly(TokenType.Ate, "Esperava um 'ate'")
+        
         this.eatOnly(TokenType.LParen, "Esperava um (");
         const comparison = this.parseExpr();
         this.eatOnly(TokenType.RParen, "Esperava um )");
@@ -256,24 +256,23 @@ export default class Parser {
 
         if (this.at().type==TokenType.Assignment) {
             return this.parseForNormalStmt(variable);
-        } else if (this.at().type==TokenType.Reserved && this.at().value=="de") {
+        } else if (this.at().type==TokenType.De) {
             return this.parseForEachStmt(variable);
         }
-        throw new Error("Erro no laço para..faca");
+
+        throw "Erro em definir um laço de repetição para..faça";
     }
 
     private parseForEachStmt(variable:Identifier):Expr {
         
-        this.eatOnly(TokenType.Reserved,"Esperava um 'de'");
+        this.eatOnly(TokenType.De,"Esperava um 'de'");
         
         const lista = {symbol:this.eatOnly(TokenType.Identifier,"Esperava o nome de uma lista").value} as Identifier;
         
         this.eatOnly(TokenType.RParen,"Esperava um )");
         
-        if (this.eatOnly(TokenType.Reserved,"Esperava um 'faca'").value!="faca") {
-            throw new Error("Esperava um 'faca'");
+        this.eatOnly(TokenType.Faca,"Esperava um 'faça'")
         
-        }
         this.eatOnly(TokenType.LChave,"Esperava um {");
         
         const step = {kind:"NumericLiteral",value:1} as NumericLiteral;
@@ -298,9 +297,7 @@ export default class Parser {
         this.eatOnly(TokenType.Virgula,"Esperava uma virgula");
         const endIndex = this.parseExpr();
         this.eatOnly(TokenType.RParen,"Esperava um )");
-        if (this.eatOnly(TokenType.Reserved,"Esperava um 'faca'").value!="faca") {
-            throw new Error("Esperava um 'faca'");
-        }
+        this.eatOnly(TokenType.Faca,"Esperava um 'faca'")
         this.eatOnly(TokenType.LChave,"Esperava um {");
         
         const step = {kind:"NumericLiteral",value:1} as NumericLiteral;
@@ -321,7 +318,7 @@ export default class Parser {
 
     private parseOutputStmt(): Expr {
         let final = "";
-        if (this.at().value=="escreval") {final="\n";}
+        if (this.at().type==TokenType.Escreval) {final="\n";}
         this.advance(); //go past escreva
         this.eatOnly(TokenType.LParen,"Esperava um '('.");
         let value;
@@ -333,7 +330,7 @@ export default class Parser {
     }
 
     private parseInputStmt(): Expr {
-        if (this.at().type==TokenType.Reserved && this.at().value=="leia") {
+        if (this.at().type==TokenType.Leia) {
             this.advance(); //go past leia
             this.eatOnly(TokenType.LParen,"Esperava um '('.");
             let text = null;
@@ -357,7 +354,7 @@ export default class Parser {
         const identifier = this.eatOnly(TokenType.Identifier,"Esperava um nome de função").value; //get identifier
         this.eatOnly(TokenType.LParen,"Esperava um '('.");
         const args = [] as ArgumentExpr[];
-        let returnType:string;
+        let returnType = "NullVal" as ValueType;
         const body = [] as Stmt[];
         if (this.at().type==TokenType.RParen) {
             this.advance();
@@ -365,29 +362,29 @@ export default class Parser {
             if (this.at().type==TokenType.DoisPontos) {
                 this.advance(); //go past :
                 //com tipo de retorno
-                returnType = this.eatOnly(TokenType.Reserved, "Esperava um tipo de retorno após : em declaração de função").value;
-                switch(returnType) {
-                    case "int":
+                const tipo = this.advance();
+                switch(tipo.type) {
+                    case TokenType.Int:
                         returnType="NumberVal";
                         break;
-                    case "caractere":
+                    case TokenType.Caractere:
                         returnType="StringVal";
                         break;
-                    case "real":
+                    case TokenType.RealWord:
                         returnType="RealVal";
                         break;
-                    case "logico":
+                    case TokenType.Logico:
                         returnType="BooleanVal";
                         break;
-                    case "var":
-                        returnType="any";
+                    case TokenType.Var:
+                        returnType="NullVal";
                         break;
                     default:
-                        throw "Erro: esperava um tipo válido de variável. Recebi: "+returnType;
+                        throw "Esperava um tipo válido de variável. Recebi: "+returnType;
                 }
             } else {
                 //sem tipo de retorno
-                returnType = "any";
+                returnType = "NullVal";
             }
             this.eatOnly(TokenType.LChave,"Esperava um '{'.");
         } else {
@@ -396,33 +393,33 @@ export default class Parser {
             while (this.at().type!=TokenType.RParen && this.at().type!=TokenType.EOF) {
                 if (this.at().type==TokenType.Virgula) {this.advance();}
                 const argname = this.eatOnly(TokenType.Identifier, "Esperava um nome de argumento").value;
-                let argtype = "";
+                let argtype = "NullVal" as ValueType;
                 if (this.at().type==TokenType.DoisPontos) {
                     this.advance(); //go past :
                     //Com tipo
-                    argtype = this.eatOnly(TokenType.Reserved, "Esperava um tipo de variável").value;
-                    switch(argtype) {
-                        case "int":
+                    const argumenttype = this.advance();
+                    switch(argumenttype.type) {
+                        case TokenType.Int:
                             argtype="NumberVal";
                             break;
-                        case "caractere":
+                        case TokenType.Caractere:
                             argtype="StringVal";
                             break;
-                        case "real":
+                        case TokenType.RealWord:
                             argtype="RealVal";
                             break;
-                        case "logico":
+                        case TokenType.Logico:
                             argtype="BooleanVal";
                             break;
-                        case "var":
-                            argtype="any";
+                        case TokenType.Var:
+                            argtype="NullVal";
                             break;
                         default:
-                            throw "Erro: esperava um tipo válido de variável. Recebi: "+argtype;
+                        throw "Esperava um tipo válido de variável. Recebi: "+argtype;
                     }
                 } else {
                     //sem tipo
-                    argtype="any";
+                    argtype="NullVal";
                 }
                 args.push({kind: "ArgumentExpr", identifier:argname, type:argtype} as ArgumentExpr);
             }
@@ -430,29 +427,29 @@ export default class Parser {
             if (this.at().type==TokenType.DoisPontos) {
                 this.advance(); //go past :
                 //com tipo de retorno
-                returnType = this.eatOnly(TokenType.Reserved, "Esperava um tipo de retorno após : em declaração de função").value;
-                switch(returnType) {
-                    case "int":
+                const tipo = this.advance();
+                switch(tipo.type) {
+                    case TokenType.Int:
                         returnType="NumberVal";
                         break;
-                    case "caractere":
+                    case TokenType.Caractere:
                         returnType="StringVal";
                         break;
-                    case "real":
+                    case TokenType.RealWord:
                         returnType="RealVal";
                         break;
-                    case "logico":
+                    case TokenType.Logico:
                         returnType="BooleanVal";
                         break;
-                    case "var":
-                        returnType="any";
+                    case TokenType.Var:
+                        returnType="NullVal";
                         break;
                     default:
-                        throw "Erro: esperava um tipo válido de variável. Recebi: "+returnType;
+                        throw "Esperava um tipo válido de variável. Recebi: "+returnType;
                 }
             } else {
                 //sem tipo de retorno
-                returnType = "any";
+                returnType = "NullVal";
             }
             this.eatOnly(TokenType.LChave,"Esperava um '{'.");
         }
@@ -495,7 +492,7 @@ export default class Parser {
 
         let elsebody;
 
-        if (this.at().type==TokenType.Reserved && this.at().value=="senao") {
+        if (this.at().type == TokenType.Senao) {
             this.advance(); //move past senão
             if (this.at().type==TokenType.LChave) {
                 this.advance(); //move past {

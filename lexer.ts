@@ -17,8 +17,6 @@ export enum TokenType {
     Identifier,
     StringLiteral,
 
-    Reserved,
-
     Whitespace,
 
     LParen, // (
@@ -329,7 +327,8 @@ export function tokenize(sourceCode: string): Token[] {
                 src.shift();
             }
             if (isReservedWord(text)) {
-                tokens.push(token(text,TokenType.Reserved,lineNumber));
+                const type = reservedWords.get(text) as TokenType;
+                tokens.push(token(text,type,lineNumber));
             } else if (text!="") {
                 tokens.push(token(text,TokenType.Identifier,lineNumber))
             }
