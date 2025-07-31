@@ -1,6 +1,7 @@
 export interface Token {
     type: TokenType,
     value: string,
+    line: number,
 }
 
 export enum TokenType {
@@ -35,40 +36,67 @@ export enum TokenType {
 
     EOL,
     EOF,
+
+    Var,
+    Int,
+    Caractere,
+    RealWord,
+    Logico,
+    Se,
+    Senao,
+    Para,
+    De,
+    Faca,
+    Enquanto,
+    Repita,
+    Ate,
+    Funcao,
+    Retorna,
+    Escreva,
+    Escreval,
+    Leia,
+    Classe,
+    Construtor,
+    Privado,
+    Protegido,
+    Publico,
+    Novo
+}
+const reservedWordsObj = {
+    "var": TokenType.Var,
+    "int": TokenType.Int,
+    "caractere": TokenType.Caractere,
+    "real": TokenType.Real,
+    "logico": TokenType.Logico,
+    
+    "se": TokenType.Se,
+    "senao": TokenType.Senao,
+    
+    "para": TokenType.Para,
+    "de": TokenType.De,
+    "faca": TokenType.Faca,
+
+    "enquanto": TokenType.Enquanto,
+    "repita": TokenType.Repita,
+    "ate": TokenType.Ate,
+
+    "funcao": TokenType.Funcao,
+    "retorna": TokenType.Retorna,
+
+    "escreva": TokenType.Escreva,
+    "escreval": TokenType.Escreval,
+    "leia": TokenType.Leia,
+
+    "classe": TokenType.Classe,
+    "construtor": TokenType.Construtor,
+    "privado": TokenType.Privado,
+    "protegido": TokenType.Protegido,
+    "publico": TokenType.Publico,
+    "novo": TokenType.Novo
 }
 
-export const reservedWords = [
-    "var",
-    "int",
-    "caractere",
-    "real",
-    "logico",
-    
-    "se",
-    "senao",
-    
-    "para",
-    "de",
-    "faca",
+export const reservedWords = new Map<string, TokenType>(Object.entries(reservedWordsObj));
 
-    "enquanto",
-    "repita",
-    "ate",
-
-    "funcao",
-    "retorna",
-
-    "escreva",
-    "escreval",
-    "leia",
-
-    "classe",
-    "construtor",
-    "privado",
-    "protegido",
-    "publico",
-    "novo"
-];
 
 const binaryOperators = [
     "+",
@@ -157,16 +185,23 @@ function isWhiteSpace(str:string):boolean {
 }
 
 function isReservedWord(str:string):boolean {
-    return reservedWords.includes(str);
+    return reservedWords.has(str);
 }
 
-function token(value:string,type:TokenType): Token {
-    return {value,type};
+function token(value:string,type:TokenType, line: number): Token {
+    return {value,type,line};
 }
+
+function current():string {
+    return src[0];
+}
+
+export let src = [] as string[];
 
 export function tokenize(sourceCode: string): Token[] {
     const tokens = new Array<Token>;
-    const src = sourceCode.split("");
+    src = sourceCode.split("");
+    let lineNumber = 1;
 
     //run til end of source code
     while (src.length>0) {
@@ -175,13 +210,13 @@ export function tokenize(sourceCode: string): Token[] {
             testStr+=src[1];
             
             if (isBinaryOperator(testStr)) {
-                tokens.push(token(testStr,TokenType.BinaryOperator));
+                tokens.push(token(testStr,TokenType.BinaryOperator, lineNumber));
                 for (let i=0; i<testStr.length; i++) {
                     src.shift();
                 }
                 continue;
             } else if (isBinaryOperator(src[0])) {
-                tokens.push(token(src[0],TokenType.BinaryOperator));
+                tokens.push(token(src[0],TokenType.BinaryOperator, lineNumber));
                 src.shift();
                 continue;
             }
@@ -189,12 +224,12 @@ export function tokenize(sourceCode: string): Token[] {
         if (isPonto(testStr)) {
             testStr+=src[1];
             if (isBinaryOperator(testStr)) {
-                tokens.push(token(testStr,TokenType.BinaryOperator));
+                tokens.push(token(testStr,TokenType.BinaryOperator, lineNumber));
                 src.shift();
                 src.shift();
                 continue;
             } else {
-                tokens.push(token(testStr,TokenType.Ponto));
+                tokens.push(token(testStr,TokenType.Ponto, lineNumber));
                 src.shift();
                 continue;
             }
@@ -214,12 +249,12 @@ export function tokenize(sourceCode: string): Token[] {
         }
 
         if (isBinaryOperator(src[0])) {
-            tokens.push(token(src[0],TokenType.BinaryOperator));
+            tokens.push(token(src[0],TokenType.BinaryOperator,lineNumber));
             src.shift();
             continue;
         }
         if (isOpeningOrClosing(src[0])) {
-            tokens.push(token(src[0],openAndClose[src[0]]));
+            tokens.push(token(src[0],openAndClose[src[0]],lineNumber));
             src.shift();
             continue;
         }
@@ -227,29 +262,30 @@ export function tokenize(sourceCode: string): Token[] {
         if (testStr=="=" || testStr==">" || testStr=="<" || testStr=="~") {
             testStr+=src[1];
             if (isComparator(testStr)) {
-                tokens.push(token(testStr,TokenType.ComparatorOperator));
+                tokens.push(token(testStr,TokenType.ComparatorOperator,lineNumber));
                 src.shift();
                 src.shift();
                 continue;
             } else if (isComparator(src[0])) {
-                tokens.push(token(src[0],TokenType.ComparatorOperator));
+                tokens.push(token(src[0],TokenType.ComparatorOperator,lineNumber));
                 src.shift();
                 continue;
             }
         }
         if (isComparator(src[0])) {
-            tokens.push(token(src[0],TokenType.ComparatorOperator));
+            tokens.push(token(src[0],TokenType.ComparatorOperator,lineNumber));
             src.shift();
             continue;
         }
 
         if (isAssign(src[0])) {
-            tokens.push(token(src[0],TokenType.Assignment));
+            tokens.push(token(src[0],TokenType.Assignment,lineNumber));
             src.shift();
             continue;
         }
         if (isEndOfLine(src[0])) {
-            tokens.push(token(src[0],TokenType.EOL));
+            if (match("\n")) {lineNumber++}
+            tokens.push(token(src[0],TokenType.EOL,lineNumber));
             src.shift();
             continue;
         }
@@ -269,7 +305,7 @@ export function tokenize(sourceCode: string): Token[] {
             }
             let ttype = TokenType.Number;
             if (number.includes(".")) {ttype=TokenType.Real;} 
-            tokens.push(token(number,ttype));
+            tokens.push(token(number,ttype,lineNumber));
             continue;
         }
 
@@ -281,7 +317,7 @@ export function tokenize(sourceCode: string): Token[] {
                 src.shift();
             }
             src.shift(); //eat the last "
-            tokens.push(token(text,TokenType.StringLiteral));
+            tokens.push(token(text,TokenType.StringLiteral,lineNumber));
             continue;
         }
 
@@ -293,14 +329,18 @@ export function tokenize(sourceCode: string): Token[] {
                 src.shift();
             }
             if (isReservedWord(text)) {
-                tokens.push(token(text,TokenType.Reserved));
+                tokens.push(token(text,TokenType.Reserved,lineNumber));
             } else if (text!="") {
-                tokens.push(token(text,TokenType.Identifier))
+                tokens.push(token(text,TokenType.Identifier,lineNumber))
             }
             continue;
         }
     }
 
-    tokens.push(token("EOF",TokenType.EOF));
+    tokens.push(token("EOF",TokenType.EOF,lineNumber));
     return tokens;
+}
+
+function match(str: string): boolean {
+    return current() == str;
 }
