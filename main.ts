@@ -20,13 +20,8 @@ export function repl() {
         }
 
         let program = {} as Program;
-        try {
-            program = parser.produceAST(input);
-            
-            
-        } catch (error) {
-            console.error("Erro de sintaxe: " + error);
-        }
+        
+        program = parser.produceAST(input);
 
         let result;
         try {
@@ -78,6 +73,12 @@ export function callbackFun(funcname:string, argumentos:string[]) {
         const pr = {kind:"Program", body} as Program;
         evaluate(pr,env);
     }
+}
+
+export function reportError(errorMessage:string, line:number) {
+    const msg = "Erro: "+errorMessage+" na linha "+line;
+    console.error(msg);
+    throw msg;
 }
 
 try {

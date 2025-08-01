@@ -1,7 +1,8 @@
 // deno-lint-ignore-file no-case-declarations
 import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, EndScope, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup} from "./ast.ts";
 import { tokenize, Token, TokenType} from "./lexer.ts";
-import { ValueType } from "./values.ts"
+import { ValueType } from "./values.ts";
+import { reportError } from "./main.ts";
 
 export default class Parser {
     private tokens: Token[] = [];
@@ -21,12 +22,14 @@ export default class Parser {
         return this.tokens[1] as Token;
     }
 
-    private eatOnly(type:TokenType,err:string) {
+    private eatOnly(type:TokenType,err:string):Token {
+        const line = this.at().line;
         const tk = this.tokens.shift()
         if (tk?.type==type) {
             return tk
         } else {
-            throw err;
+            reportError(err, line);
+            return {} as Token;
         }
     }
 
@@ -380,6 +383,7 @@ export default class Parser {
                         returnType="NullVal";
                         break;
                     default:
+                        reportError("Esperava um tipo válido de variável. Recebi: "+returnType, this.at().line);
                         throw "Esperava um tipo válido de variável. Recebi: "+returnType;
                 }
             } else {
@@ -415,7 +419,8 @@ export default class Parser {
                             argtype="NullVal";
                             break;
                         default:
-                        throw "Esperava um tipo válido de variável. Recebi: "+argtype;
+                            reportError("Esperava um tipo válido de variável. Recebi: "+argtype, this.at().line);
+                            throw "Esperava um tipo válido de variável. Recebi: "+argtype;
                     }
                 } else {
                     //sem tipo
@@ -445,6 +450,7 @@ export default class Parser {
                         returnType="NullVal";
                         break;
                     default:
+                        reportError("Esperava um tipo válido de variável. Recebi: "+returnType, this.at().line);
                         throw "Esperava um tipo válido de variável. Recebi: "+returnType;
                 }
             } else {
@@ -521,14 +527,15 @@ export default class Parser {
         
 
         const identifier = this.eatOnly(TokenType.Identifier,"Esperava um nome de variável.")?.value;
-
+        
         if (this.at().type==TokenType.EOL || this.at().type==TokenType.EOF) {
             return { kind:"VarDecl", identifier} as VarDecl;
         } else if (this.at().type==TokenType.Assignment) {
             const decl = {kind:"VarDecl",value:this.parseExpr(),identifier,type:varType} as VarDecl;
             return decl;  
         } else {
-            throw "Esperava ; ou ="
+            reportError("Esperava ; ou = na declaração de váriavel",this.at().line);
+            throw "";
         }
     }
 
@@ -745,8 +752,8 @@ export default class Parser {
             case TokenType.RChave:
                 return {kind:"EndScope"} as EndScope;
             default:
-                console.error("Erro: token inesperado: ", this.at().type);
-                throw Error;
+                reportError("Token inesperado: "+this.at().value, this.at().line);
+                throw "Token inesperado: "+this.at().value;
         }
     }
 }
