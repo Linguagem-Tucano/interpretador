@@ -8,7 +8,6 @@ export default class Parser {
     private tokens: Token[] = [];
 
     private insideClass = false;
-    private insideClassName = "";
 
     private at():Token {
         return this.tokens[0] as Token;
@@ -28,8 +27,7 @@ export default class Parser {
         if (tk?.type==type) {
             return tk
         } else {
-            reportError(err, line);
-            return {} as Token;
+            throw reportError(err, line);
         }
     }
 
@@ -383,8 +381,7 @@ export default class Parser {
                         returnType="NullVal";
                         break;
                     default:
-                        reportError("Esperava um tipo válido de variável. Recebi: "+returnType, this.at().line);
-                        throw "Esperava um tipo válido de variável. Recebi: "+returnType;
+                        throw reportError("Esperava um tipo válido de variável. Recebi: "+returnType, this.at().line);
                 }
             } else {
                 //sem tipo de retorno
@@ -419,8 +416,7 @@ export default class Parser {
                             argtype="NullVal";
                             break;
                         default:
-                            reportError("Esperava um tipo válido de variável. Recebi: "+argtype, this.at().line);
-                            throw "Esperava um tipo válido de variável. Recebi: "+argtype;
+                            throw reportError("Esperava um tipo válido de variável. Recebi: "+argtype, this.at().line);
                     }
                 } else {
                     //sem tipo
@@ -450,8 +446,7 @@ export default class Parser {
                         returnType="NullVal";
                         break;
                     default:
-                        reportError("Esperava um tipo válido de variável. Recebi: "+returnType, this.at().line);
-                        throw "Esperava um tipo válido de variável. Recebi: "+returnType;
+                        throw reportError("Esperava um tipo válido de variável. Recebi: "+returnType, this.at().line);
                 }
             } else {
                 //sem tipo de retorno
@@ -534,8 +529,7 @@ export default class Parser {
             const decl = {kind:"VarDecl",value:this.parseExpr(),identifier,type:varType} as VarDecl;
             return decl;  
         } else {
-            reportError("Esperava ; ou = na declaração de váriavel",this.at().line);
-            throw "";
+            throw reportError("Esperava ; ou = na declaração de váriavel",this.at().line);            
         }
     }
 
@@ -752,8 +746,7 @@ export default class Parser {
             case TokenType.RChave:
                 return {kind:"EndScope"} as EndScope;
             default:
-                reportError("Token inesperado: "+this.at().value, this.at().line);
-                throw "Token inesperado: "+this.at().value;
+                throw reportError("Token inesperado: "+this.at().value, this.at().line);
         }
     }
 }
