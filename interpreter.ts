@@ -376,7 +376,8 @@ function evaluateComparison(node: ComparatorExpr, env:Environment): RuntimeVal {
 function evaluateVarDecl(variable:VarDecl,env:Environment):RuntimeVal {
     const value = variable.value ? evaluate(variable.value,env) : MK_NULL();
     let assignedtype = value.type;
-    let type = "NullVal";
+    let type = "NullVal" as ValueType;
+    let listType = "NullVal" as ValueType;
     switch (variable.type) {
         case "int":
             type="NumberVal";
@@ -396,20 +397,30 @@ function evaluateVarDecl(variable:VarDecl,env:Environment):RuntimeVal {
             type = assignedtype; //should work :3
             break;
         case "int[]":
-            type="NumberList";
+            type="ListVal";
+            listType = "NumberVal";
             break;
         case "caractere[]":
-            type="StringList";
+            type="ListVal";
+            listType="StringVal";
             break;
         case "real[]":
-            type="RealList";
+            type="ListVal";
+            listType="RealVal";
             break;
         case "logico[]":
-            type="BooleanList";
+            type="ListVal";
+            listType="BooleanVal";
             break;
     }
 
-    if (type!=assignedtype) {throw "Erro: tipo de variavel errado. Esperava: "+type+" // Recebi: "+assignedtype}
+    if (type!=assignedtype) {throw reportError("Tipo de variavel errado. Esperava: "+type+" e recebi: "+assignedtype,variable.line)}
+
+    if (type=="ListVal") {
+        if((value as ListVal).listType != listType) {
+            throw reportError("Lista com tipo incompatível. Esperava "+type+" e recebi: "+assignedtype,variable.line);
+        }
+    }
 
     env.declareVar(variable.identifier,value,type as ValueType);
     return value;
@@ -418,15 +429,13 @@ function evaluateVarDecl(variable:VarDecl,env:Environment):RuntimeVal {
 function evaluateVarAssignment(node:AssignmentExpr,env:Environment):RuntimeVal {
     if (node.assigne.kind === "AttributeLookup") { return evaluateAttributeAssignment(node, env); }
 
-    if (node.assigne.kind!="Identifier") { throw "Erro: nome de variavel esperado."; }
-
     const varname = node.assigne as Identifier;
     
     let valueside = evaluate(node.value,env);
     
 
-    const vartype = (env.lookupVar(varname.symbol).type as ValueType as string);
-    let assigneetype = valueside.type;
+    const vartype = (env.lookupVar(varname.symbol).type as ValueType as string) as ValueType;
+    let assigneetype = valueside.type as ValueType;
 
     switch (vartype) {
         case "NumberVal":            
@@ -441,7 +450,7 @@ function evaluateVarAssignment(node:AssignmentExpr,env:Environment):RuntimeVal {
             break;
     }
 
-    if (assigneetype==vartype) {
+    if (assigneetype==vartype || vartype=="NullVal") {
         return env.assignVar(varname.symbol,valueside);
     } else {throw "Erro: tipo de variavel errado. Esperava: "+vartype+" // Recebi: "+assigneetype}
 }
