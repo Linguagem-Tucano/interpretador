@@ -452,7 +452,7 @@ function evaluateVarAssignment(node:AssignmentExpr,env:Environment):RuntimeVal {
 
     if (assigneetype==vartype || vartype=="NullVal") {
         return env.assignVar(varname.symbol,valueside);
-    } else {throw "Erro: tipo de variavel errado. Esperava: "+vartype+" // Recebi: "+assigneetype}
+    } else {throw reportError("Tipo de variavel errado. Esperava: "+vartype+" e recebi: "+assigneetype,node.line)}
 }
 
 function evaluateAttributeAssignment(node:AssignmentExpr, env:Environment): RuntimeVal {
