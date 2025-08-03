@@ -36,6 +36,7 @@ export default class Parser {
         const program:Program = {
             kind:"Program",
             body:[],
+            line:1
         };
 
         while (this.notEOF()) {
@@ -142,6 +143,7 @@ export default class Parser {
         if (!this.insideClass) {
             throw "Um construtor deve estar sempre dentro de uma classe"
         }
+        const line = this.at().line;
 
         this.advance(); // consume 'construtor'
     
@@ -185,6 +187,7 @@ export default class Parser {
                 kind: "ArgumentExpr",
                 identifier: argname,
                 type: argtype,
+                line
             });
         }
     
@@ -204,6 +207,7 @@ export default class Parser {
             type: "any",
             args,
             body,
+            line
         } as FuncDecl;
     }
     
@@ -265,7 +269,8 @@ export default class Parser {
     }
 
     private parseForEachStmt(variable:Identifier):Expr {
-        
+        const line = this.at().line;
+
         this.eatOnly(TokenType.De,"Esperava um 'de'");
         
         const lista = {symbol:this.eatOnly(TokenType.Identifier,"Esperava o nome de uma lista").value} as Identifier;
@@ -289,10 +294,11 @@ export default class Parser {
         }
         this.advance(); //go past }
 
-        return {kind:"ForEachStmt",variable,list:lista,body,step} as ForEachStmt;
+        return {kind:"ForEachStmt",variable,list:lista,body,step,line} as ForEachStmt;
     }
 
     private parseForNormalStmt(variable:Identifier): Expr {
+        const line = this.at().line;
         this.eatOnly(TokenType.Assignment,"Esperava um =");
         const startIndex = this.parseExpr();
         this.eatOnly(TokenType.Virgula,"Esperava uma virgula");
@@ -314,7 +320,7 @@ export default class Parser {
         }
         this.advance(); //go past }
 
-        return {kind:"ForStmt",variable,startIndex,endIndex,body,step} as ForStmt;
+        return {kind:"ForStmt",variable,startIndex,endIndex,body,step,line} as ForStmt;
     }
 
     private parseOutputStmt(): Expr {

@@ -1,6 +1,7 @@
-import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, StringList, NumberList, RealList, BooleanList, ObjectVal } from "./values.ts";
+import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, ListVal, ObjectVal } from "./values.ts";
 import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
 import Environment from "./environment.ts";
+import { reportError } from "./main.ts";
 
 
 export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
@@ -155,18 +156,18 @@ function evaluateUntilStmt(node: UntilStmt, env:Environment):RuntimeVal {
 function evaluateListIdentifier(node: ListIdentifier, env:Environment): RuntimeVal {
     const symbol = node.symbol;
     if (env.hasVar(symbol)) {
-        const list = env.lookupVar(symbol) as StringList;
+        const list = env.lookupVar(symbol) as ListVal;
         const lookup = evaluate(node.lookup,env) as NumberVal;
         return list.value[lookup.value];
     } else {
-        throw new Error("Lista não existe");
+        throw reportError("Lista não existe", node.line);
     }
 }
 
 function evaluateListLiteral(node: ListLiteral, env:Environment): RuntimeVal {
     const values = node.values;
     let type = null;
-    const list = [];
+    const list = [] as RuntimeVal[];
     for (let i=0; i<=values.length-1; i++) {
         const value = values[i];
 
@@ -176,23 +177,12 @@ function evaluateListLiteral(node: ListLiteral, env:Environment): RuntimeVal {
         }
 
         if (type!=v.type) {
-            throw new Error("Tipo inconsistente de dados na lista.");
+            throw reportError("Tipo inconsistente de dados na lista.",node.line);
         }
 
         list.push(v);
     }
-    switch (type) {
-        case "StringVal":
-            return {type:"StringList", value:list} as StringList;
-        case "NumberVal":
-            return {type:"NumberList", value:list} as NumberList;
-        case "RealVal":
-            return {type:"RealList", value:list} as RealList;
-        case "BooleanList":
-            return {type:"BooleanList", value:list} as BooleanList;
-        default:
-            return MK_NULL();
-    }
+    return {type:"ListVal", value:list, listType:type} as ListVal;
 }
 
 function evaluateOutputStmt(node: OutputStmt, env:Environment): RuntimeVal {

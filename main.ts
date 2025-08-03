@@ -78,7 +78,8 @@ export function callbackFun(funcname:string, argumentos:string[]) {
 export function reportError(errorMessage:string, line:number) {
     const msg = "Erro: "+errorMessage+" na linha "+line;
     console.error(msg);
-    throw msg;
+    return null;
+    //throw msg;
 }
 
 try {

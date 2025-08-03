@@ -7,10 +7,7 @@ export type ValueType =
 | "RealVal"
 | "StringVal"
 | "BooleanVal"
-| "NumberList"
-| "RealList"
-| "StringList"
-| "BooleanList"
+| "ListVal"
 | "ObjectVal";
 
 
@@ -44,24 +41,10 @@ export interface BooleanVal extends RuntimeVal {
     value: boolean;
 }
 
-export interface NumberList extends RuntimeVal {
-    type: "NumberList";
-    value: NumberVal[];
-}
-
-export interface RealList extends RuntimeVal {
-    type: "RealList";
-    value: RealVal[];
-}
-
-export interface StringList extends RuntimeVal {
-    type: "StringList";
-    value: StringVal[];
-}
-
-export interface BooleanList extends RuntimeVal {
-    type: "BooleanList";
-    value: BooleanVal[];
+export interface ListVal extends RuntimeVal {
+    type: "ListVal";
+    value: RuntimeVal[];
+    listType: ValueType;
 }
 
 export interface ObjectVal extends RuntimeVal {
