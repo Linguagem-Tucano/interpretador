@@ -66,16 +66,16 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
 }
 
 function evaluateAttributeLookup(node: AttributeLookup, env: Environment): RuntimeVal {
-    const obj = env.lookupVar(node.symbol) as ObjectVal;
+    const obj = lookupVar(node,node.symbol,env) as ObjectVal;
     const objEnv = obj.env;
     //const ret = evaluate(node.lookup, objEnv); //descobri
-    const ret = objEnv.lookupVar(node.lookup);
+    const ret = lookupVar(node,node.lookup,objEnv);
     //console.log(ret);
     return ret; 
 }
 
 function evaluateCallLookup(node: CallLookup, env:Environment): RuntimeVal {
-    const obj = env.lookupVar(node.symbol) as ObjectVal;
+    const obj = lookupVar(node,node.symbol,env) as ObjectVal;
     const objEnv = obj.env;
 
     const c = {identifier: node.call, args: node.args, kind:"FuncCall"} as FuncCall;
@@ -153,7 +153,7 @@ function evaluateUntilStmt(node: UntilStmt, env:Environment):RuntimeVal {
 function evaluateListIdentifier(node: ListIdentifier, env:Environment): RuntimeVal {
     const symbol = node.symbol;
     if (env.hasVar(symbol)) {
-        const list = env.lookupVar(symbol) as ListVal;
+        const list = lookupVar(node,symbol,env) as ListVal;
         const lookup = evaluate(node.lookup,env) as NumberVal;
         return list.value[lookup.value];
     } else {
@@ -255,7 +255,7 @@ function evaluateForEachStmt(node: ForEachStmt, env:Environment):RuntimeVal {
     let list;
     //check list
     if (env.hasVar(lista)) {
-        list = env.lookupVar(lista);
+        list = lookupVar(node,lista,env);
     } else {
         throw reportError("Lista não existe",node.line);
     }
@@ -431,7 +431,7 @@ function evaluateVarAssignment(node:AssignmentExpr,env:Environment):RuntimeVal {
     let valueside = evaluate(node.value,env);
     
 
-    const vartype = (env.lookupVar(varname.symbol).type as ValueType as string) as ValueType;
+    const vartype = (lookupVar(node,varname.symbol,env).type as ValueType as string) as ValueType;
     let assigneetype = valueside.type as ValueType;
 
     switch (vartype) {
@@ -454,13 +454,13 @@ function evaluateVarAssignment(node:AssignmentExpr,env:Environment):RuntimeVal {
 
 function evaluateAttributeAssignment(node:AssignmentExpr, env:Environment): RuntimeVal {
     const attLookup = node.assigne as AttributeLookup;
-    const obj = env.lookupVar(attLookup.symbol) as ObjectVal;
+    const obj = lookupVar(node,attLookup.symbol,env) as ObjectVal;
     const objEnv = obj.env;
     const varname = attLookup.lookup;
 
     let valueside = evaluate(node.value, env);
 
-    const vartype = (objEnv.lookupVar(varname).type as ValueType as string);
+    const vartype = (lookupVar(node,varname,objEnv).type as ValueType as string);
     let assigneetype = valueside.type;
 
     switch (vartype) {
@@ -483,7 +483,7 @@ function evaluateAttributeAssignment(node:AssignmentExpr, env:Environment): Runt
 
 function evaluateIdentifier(identifier:Identifier,env:Environment):RuntimeVal {
     //change this
-    const val = env.lookupVar(identifier.symbol);
+    const val = lookupVar(identifier,identifier.symbol,env);
     return val;
 }
 
@@ -679,4 +679,12 @@ function evaluateProgram(program: Program, env: Environment):RuntimeVal {
         console.log(outputBuffer);
 
     return lastEvaluated;
+}
+
+function lookupVar(node:Stmt,varname: string, env: Environment): RuntimeVal {
+    try {
+        return env.lookupVar(varname)
+    } catch (error) {
+        throw reportError(error as string, node.line);
+    }
 }

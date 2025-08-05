@@ -44,7 +44,7 @@ export default class Environment {
             return this
         }
         if (this.parent==undefined) {
-            throw `Impossível resolver variável ${varname} pois ela não existe.`
+            throw `Variável ${varname} não existe.`;
         }
         return this.parent.resolve(varname);
     }
@@ -59,7 +59,7 @@ export default class Environment {
             return this;
         }
         if (this.parent==undefined) {
-            throw "Impossível resolver função "+funcname+" pois ela não existe."
+            throw `Função ${funcname} não existe.`;
         }
         return this.parent.resolveFunc(funcname);
     }
@@ -109,7 +109,7 @@ export default class Environment {
             return this.classes.get(classname) as Class;
         }
         if (this.parent==undefined) {
-            throw "Impossível resolver classe "+classname+" pois ela não existe."
+            throw `Classe ${classname} não existe.`;
         }
         return this.parent.resolveClass(classname);
     }
