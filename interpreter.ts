@@ -491,7 +491,7 @@ function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
     const identifier = node.identifier
     //call function
     const func = env.lookupFunc(identifier);
-    const funcType = func.type;
+    const funcType = func.type as ValueType;
     //get the arguments
     const args = func.args ? func.args : [] as ArgumentExpr[];
     const passedArgs = node.args;
@@ -541,7 +541,7 @@ function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
             const s = body[index];    
             if (s.kind=="ReturnExpr") {
                 let result = evaluate((s as ReturnExpr).value,newEnv);
-                if (funcType!="any") {
+                if (funcType!="NullVal") {
                     if (funcType=="NumberVal" && result.type=="RealVal") {result=returnNumber(result as RealVal); result.type="NumberVal";}
                     if (funcType=="RealVal" && result.type=="NumberVal") {result=returnReal(result); result.type="RealVal";}
                     if (result.type!=funcType) {throw reportError("Função retornou valor inválido, esperava "+funcType+" e recebi "+result.type,node.line);} 

@@ -1,3 +1,5 @@
+import { ValueType } from "./values.ts";
+
 export type nodeType = 
 | "Program"
 | "NumericLiteral"
@@ -141,7 +143,7 @@ export interface VarDecl extends Stmt {
 export interface FuncDecl extends Stmt {
     kind: "FuncDecl";
     identifier: string;
-    type:string;
+    type:ValueType;
     args:ArgumentExpr[];
     body:Stmt[];
 }

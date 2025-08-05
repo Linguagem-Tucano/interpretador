@@ -205,7 +205,7 @@ export default class Parser {
         return {
             kind: "FuncDecl",
             identifier: "construtor",
-            type: "any",
+            type: "NullVal",
             args,
             body,
             line
