@@ -508,7 +508,7 @@ function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
                 const passed = passedArgs[index];
                 const pArg = evaluate(passed,newEnv);
                 const passedType = pArg.type;
-                if (arg.type==passedType || arg.type=="any") {
+                if (arg.type==passedType || arg.type=="NullVal") {
                     newEnv.declareVar(arg.identifier, pArg, passedType);
                 } else {
                     throw reportError("Esperava argumento número "+(index+1)+" como "+arg.type+" mas recebi "+passedType,node.line);
@@ -518,7 +518,7 @@ function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
                 const s = body[index];
                 if (s.kind=="ReturnExpr") {
                     let result = evaluate((s as ReturnExpr).value,newEnv);
-                    if (funcType!="any") {
+                    if (funcType!="NullVal") {
                         if (funcType=="NumberVal" && result.type=="RealVal") {result=returnNumber(result as RealVal); result.type="NumberVal";}
                         if (funcType=="RealVal" && result.type=="NumberVal") {result=returnReal(result); result.type="RealVal";}
                         if (result.type!=funcType) {throw "Função retornou valor inválido, esperava "+funcType+" e recebi "+result.type;}
