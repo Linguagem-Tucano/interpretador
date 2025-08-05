@@ -40,10 +40,6 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return evaluateWhileStmt(astNode as WhileStmt, env);
         case "UntilStmt":
             return evaluateUntilStmt(astNode as UntilStmt, env);
-        case "EOL":
-            return MK_NULL();
-        case "EndScope":
-            return MK_NULL();
         case "FuncDecl":
             return evaluateFuncDecl(astNode as FuncDecl, env);
         case "FuncCall":
@@ -63,8 +59,7 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
         case "CallLookup":
             return evaluateCallLookup(astNode as CallLookup, env);
         default:
-            console.error("Erro de interpretação! Tipo inesperado: ",astNode);
-            return MK_NULL();
+            throw reportError("Tipo de nó desconhecido: "+astNode.kind, astNode.line);
     }
 }
 
@@ -260,7 +255,7 @@ function evaluateForEachStmt(node: ForEachStmt, env:Environment):RuntimeVal {
     if (env.hasVar(lista)) {
         list = env.lookupVar(lista);
     } else {
-        throw new Error("Lista não existe");
+        throw reportError("Lista não existe",node.line);
     }
 
     const val = 0
@@ -331,7 +326,7 @@ function evaluateComparison(node: ComparatorExpr, env:Environment): RuntimeVal {
                     result.value = (left.value>=right.value);
                     break;
                 } else {
-                    throw new Error("Erro: Tentou avaliar dois tipos incompativeis: "+evaluate(node.left,env).type+" // "+evaluate(node.right,env).type);
+                    throw reportError("Tentou avaliar dois tipos incompativeis: "+evaluate(node.left,env).type+" e "+evaluate(node.right,env).type,node.line);
                 }
             case "<=":
                 left = (evaluate(node.left,env));
@@ -340,7 +335,7 @@ function evaluateComparison(node: ComparatorExpr, env:Environment): RuntimeVal {
                     result.value = (left.value<=right.value);
                     break;
                 } else {
-                    throw new Error("Erro: Tentou avaliar dois tipos incompativeis: "+evaluate(node.left,env).type+" // "+evaluate(node.right,env).type);
+                    throw reportError("Tentou avaliar dois tipos incompativeis: "+evaluate(node.left,env).type+" e "+evaluate(node.right,env).type, node.line);
                 }
             case ">":
                 left = (evaluate(node.left,env));
@@ -349,7 +344,7 @@ function evaluateComparison(node: ComparatorExpr, env:Environment): RuntimeVal {
                     result.value = (left.value>right.value);
                     break;
                 } else {
-                    throw new Error("Erro: Tentou avaliar dois tipos incompativeis: "+evaluate(node.left,env).type+" // "+evaluate(node.right,env).type);
+                    throw reportError("Tentou avaliar dois tipos incompativeis: "+evaluate(node.left,env).type+" e "+evaluate(node.right,env).type, node.line);
                 }
             case "<":
                 
@@ -359,7 +354,7 @@ function evaluateComparison(node: ComparatorExpr, env:Environment): RuntimeVal {
                     result.value = (left.value<right.value);
                     break;
                 } else {
-                    throw new Error("Erro: Tentou avaliar dois tipos incompativeis: "+evaluate(node.left,env).type+" // "+evaluate(node.right,env).type);
+                    throw reportError("Tentou avaliar dois tipos incompativeis: "+evaluate(node.left,env).type+" e "+evaluate(node.right,env).type, node.line);
                 }
                 
             case "~=":
@@ -369,7 +364,7 @@ function evaluateComparison(node: ComparatorExpr, env:Environment): RuntimeVal {
         }
         return result;
     } catch {
-        throw new Error("Erro: Tentou avaliar dois tipos incompativeis: "+evaluate(node.left,env).type+" // "+evaluate(node.right,env).type);
+        throw reportError("Tentou avaliar dois tipos incompativeis: "+evaluate(node.left,env).type+" e "+evaluate(node.right,env).type, node.line);
     }
 }
 
@@ -481,7 +476,7 @@ function evaluateAttributeAssignment(node:AssignmentExpr, env:Environment): Runt
 
     if (assigneetype==vartype) {
         return objEnv.assignVar(varname,valueside);
-    } else {throw "Erro: tipo de variavel errado. Esperava: "+vartype+" // Recebi: "+assigneetype}
+    } else {throw reportError("Tipo de variavel errado. Esperava: "+vartype+" e recebi: "+assigneetype,node.line)}
 }
 
 function evaluateIdentifier(identifier:Identifier,env:Environment):RuntimeVal {
@@ -514,7 +509,7 @@ function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
                 if (arg.type==passedType || arg.type=="any") {
                     newEnv.declareVar(arg.identifier, pArg, passedType);
                 } else {
-                    throw "Esperava argumento número "+(index+1)+" como "+arg.type+" mas recebi "+passedType;
+                    throw reportError("Esperava argumento número "+(index+1)+" como "+arg.type+" mas recebi "+passedType,node.line);
                 }
             }
             for (let index = 0; index < body.length; index++) {
@@ -535,7 +530,7 @@ function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
                 lastRes=curr;
             }
         } else {
-            throw "Esperava "+args.length+" argumentos, recebi "+passedArgs.length;
+            throw reportError("Esperava "+args.length+" argumentos, recebi "+passedArgs.length,node.line);
         }
     } else {
         //no arguments
@@ -547,7 +542,7 @@ function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
                 if (funcType!="any") {
                     if (funcType=="NumberVal" && result.type=="RealVal") {result=returnNumber(result as RealVal); result.type="NumberVal";}
                     if (funcType=="RealVal" && result.type=="NumberVal") {result=returnReal(result); result.type="RealVal";}
-                    if (result.type!=funcType) {throw "Função retornou valor inválido, esperava "+funcType+" e recebi "+result.type;} 
+                    if (result.type!=funcType) {throw reportError("Função retornou valor inválido, esperava "+funcType+" e recebi "+result.type,node.line);} 
                     return result;
                 } else {
                     return result;
@@ -594,16 +589,16 @@ function evaluateBinaryExpr(binop: BinaryExpr, env: Environment):RuntimeVal {
         const result = res;
         return result;
     } else if (binop.operator=="e" || binop.operator=="ou" || binop.operator=="xou") {
-        const v = evaluateLogicalBinaryExpr(leftHand, rightHand, binop.operator);
+        const v = evaluateLogicalBinaryExpr(leftHand, rightHand, binop.operator, binop.line);
         return v;
     } else {
 
         //check if both are numeric values
         if (leftHand.type!="RealVal" && leftHand.type!="NumberVal") {
-            throw new Error("Tentativa de fazer operação numérica com valor não numérico: "+leftHand.type);
+            throw reportError("Tentativa de fazer operação numérica com valor não numérico: "+leftHand.type,binop.line);
         }
         if (rightHand.type!="RealVal" && rightHand.type!="NumberVal") {
-            throw new Error("Tentativa de fazer operação numérica com valor não numérico: "+rightHand.type);
+            throw reportError("Tentativa de fazer operação numérica com valor não numérico: "+rightHand.type,binop.line);
         }
 
         const left = leftHand as RealVal;
@@ -621,9 +616,9 @@ function evaluateBinaryExpr(binop: BinaryExpr, env: Environment):RuntimeVal {
     }
 }
 
-function evaluateLogicalBinaryExpr(left:RuntimeVal, right:RuntimeVal,op:string): BooleanVal {
+function evaluateLogicalBinaryExpr(left:RuntimeVal, right:RuntimeVal,op:string,line:number): BooleanVal {
     if (left.type!="BooleanVal" || right.type!="BooleanVal") {
-        throw new Error("Tentativa de fazer operação logica com valores não booleanos");
+        throw reportError("Tentativa de fazer operação logica com valores não booleanos",line);
     }
 
     switch (op) {

@@ -233,10 +233,6 @@ export interface EndOfLine extends Expr {
     kind: "EOL";
 }
 
-export interface EndScope extends Expr {
-    kind: "EndScope";
-}
-
 export interface Dot extends Expr {
     kind: "Dot";
 }

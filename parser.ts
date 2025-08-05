@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-case-declarations
-import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, EndScope, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup} from "./ast.ts";
+import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup} from "./ast.ts";
 import { tokenize, Token, TokenType} from "./lexer.ts";
 import { ValueType } from "./values.ts";
 import { reportError } from "./main.ts";
@@ -113,6 +113,7 @@ export default class Parser {
             kind: "NewObjectExpr",
             class: className,
             args,
+            line: this.at().line
         } as NewObjectExpr;
     }
 
@@ -135,7 +136,7 @@ export default class Parser {
         this.insideClass = false;
         this.advance(); // consume '}'
         
-        const ret = {kind:"Class", identifier, body} as Class;
+        const ret = {kind:"Class", identifier, body,line: this.at().line} as Class;
         return ret;
     }
     
@@ -228,7 +229,7 @@ export default class Parser {
             body.push(s);
         }
         this.advance(); //go past }
-        return {kind:"WhileStmt", body, comparison} as WhileStmt;
+        return {kind:"WhileStmt", body, comparison,line: this.at().line} as WhileStmt;
     }
 
     private parseUntilStmt(): Stmt {
@@ -250,7 +251,7 @@ export default class Parser {
             body.push(s);
         }
         this.advance(); //go past }
-        return {kind:"UntilStmt", body, comparison} as UntilStmt;
+        return {kind:"UntilStmt", body, comparison,line: this.at().line} as UntilStmt;
     }
 
     private parseForStmt(): Stmt {
@@ -333,7 +334,7 @@ export default class Parser {
             value = this.parseStmt();
         }
         this.eatOnly(TokenType.RParen,"Esperava um ')'.");
-        return {kind:"OutputStmt", value, final} as OutputStmt;
+        return {kind:"OutputStmt", value, final,line: this.at().line} as OutputStmt;
     }
 
     private parseInputStmt(): Expr {
@@ -350,7 +351,7 @@ export default class Parser {
                 }
             }
             this.eatOnly(TokenType.RParen,"Esperava um ')'.");
-            return {kind:"InputStmt", text, varname} as InputStmt;
+            return {kind:"InputStmt", text, varname,line: this.at().line} as InputStmt;
         }
         return this.parseFuncCall();
     }
@@ -469,13 +470,13 @@ export default class Parser {
         }
         this.advance(); //go past }
 
-        return {kind:"FuncDecl", identifier:identifier, body:body, type:returnType, args:args} as FuncDecl;
+        return {kind:"FuncDecl", identifier:identifier, body:body, type:returnType, args:args,line: this.at().line} as FuncDecl;
     }
 
     private parseReturnExpr(): Expr {
         this.advance(); //go past retorna
         const value = this.parseStmt();
-        return {kind:"ReturnExpr",value} as ReturnExpr;
+        return {kind:"ReturnExpr",value,line: this.at().line} as ReturnExpr;
     }
 
     private parseIfStmt(): Stmt {
@@ -512,7 +513,7 @@ export default class Parser {
             }
         }
         
-        return {kind:"IfStmt", comparison, body, else:elsebody} as IfStmt;
+        return {kind:"IfStmt", comparison, body, else:elsebody,line: this.at().line} as IfStmt;
     }
 
     private parseVarDecl(): Stmt {
@@ -530,9 +531,9 @@ export default class Parser {
         const identifier = this.eatOnly(TokenType.Identifier,"Esperava um nome de variável.")?.value;
         
         if (this.at().type==TokenType.EOL || this.at().type==TokenType.EOF) {
-            return { kind:"VarDecl", identifier} as VarDecl;
+            return { kind:"VarDecl", identifier,line: this.at().line} as VarDecl;
         } else if (this.at().type==TokenType.Assignment) {
-            const decl = {kind:"VarDecl",value:this.parseExpr(),identifier,type:varType} as VarDecl;
+            const decl = {kind:"VarDecl",value:this.parseExpr(),identifier,type:varType,line: this.at().line} as VarDecl;
             return decl;  
         } else {
             throw reportError("Esperava ; ou = na declaração de váriavel",this.at().line);            
@@ -556,7 +557,7 @@ export default class Parser {
                 }
             }
             this.advance();
-            return {kind:"ListLiteral",values:list} as ListLiteral;
+            return {kind:"ListLiteral",values:list,line: this.at().line} as ListLiteral;
         }
         return this.parseConcatenateExpr();
     }
@@ -566,7 +567,7 @@ export default class Parser {
         while (this.at().value=="..") {
             const operator = this.advance().value;
             const right = this.parseStmt();
-            left = {kind:"BinaryExpr",left,right,operator} as BinaryExpr;
+            left = {kind:"BinaryExpr",left,right,operator,line: this.at().line} as BinaryExpr;
         }
         return left; 
     }
@@ -591,7 +592,7 @@ export default class Parser {
                     }
                 }
                 this.advance(); //go past the )
-                return {kind:"FuncCall",identifier,args} as FuncCall
+                return {kind:"FuncCall",identifier,args,line: this.at().line} as FuncCall
             }
         }
         return this.parseComparatorExpr();
@@ -602,7 +603,7 @@ export default class Parser {
         if (this.at().type==TokenType.ComparatorOperator) {
             const operator = this.advance().value; //advance past operator
             const right = this.parseStmt();
-            return {kind:"ComparatorExpr",left,right,operator} as ComparatorExpr;
+            return {kind:"ComparatorExpr",left,right,operator,line: this.at().line} as ComparatorExpr;
         }
         return left;
     }
@@ -612,7 +613,7 @@ export default class Parser {
         if (this.at().type==TokenType.Assignment) {
             this.advance(); //advance past =
             const value = this.parseStmt();
-            return {value, assigne:left,kind:"AssignmentExpr"} as AssignmentExpr;
+            return {value, assigne:left,kind:"AssignmentExpr",line: this.at().line} as AssignmentExpr;
         }
         return left;
     }
@@ -623,7 +624,7 @@ export default class Parser {
             while (this.at().value=="e" || this.at().value=="ou" || this.at().value=="xou") {
                 const operator = this.advance().value;
                 const right = this.parseStmt();
-                left = {kind:"BinaryExpr",left,right,operator} as BinaryExpr;
+                left = {kind:"BinaryExpr",left,right,operator,line: this.at().line} as BinaryExpr;
             }
         //}
         return left; 
@@ -634,7 +635,7 @@ export default class Parser {
         while (this.at().value=="+" || this.at().value=="-") {
             const operator = this.advance().value;
             const right = this.parseStmt();
-            left = {kind:"BinaryExpr",left,right,operator} as BinaryExpr;
+            left = {kind:"BinaryExpr",left,right,operator,line: this.at().line} as BinaryExpr;
         }
         return left; 
     }
@@ -644,7 +645,7 @@ export default class Parser {
         while (this.at().value=="/" || this.at().value=="*" || this.at().value=="%" || this.at().value=="//") {
             const operator = this.advance().value;
             const right = this.parseStmt();
-            left = {kind:"BinaryExpr",left,right,operator} as BinaryExpr;
+            left = {kind:"BinaryExpr",left,right,operator,line: this.at().line} as BinaryExpr;
         }
         return left; 
     }
@@ -654,7 +655,7 @@ export default class Parser {
         while (this.at().value=="^") {
             const operator = this.advance().value;
             const right = this.parseStmt();
-            left = {kind:"BinaryExpr",left,right,operator} as BinaryExpr;
+            left = {kind:"BinaryExpr",left,right,operator,line: this.at().line} as BinaryExpr;
         }
         return left; 
     }
@@ -682,7 +683,7 @@ export default class Parser {
                 expr = {
                     kind: "AttributeLookup",
                     symbol: newexpr.symbol,
-                    lookup: property
+                    lookup: property,line: this.at().line
                 } as AttributeLookup;
 
             } else if (this.at().type == TokenType.LParen) {
@@ -702,7 +703,7 @@ export default class Parser {
                     kind: "CallLookup",
                     symbol: newexpr.symbol,
                     call: property,
-                    args
+                    args,line: this.at().line
                 } as CallLookup;
 
             } else {
@@ -726,31 +727,33 @@ export default class Parser {
 
                     const lookup = this.parseStmt();
                     this.eatOnly(TokenType.RColch, "Esperava um ]");
-                    return {kind:"ListIdentifier",symbol:id,lookup:lookup} as ListIdentifier;
+                    return {kind:"ListIdentifier",symbol:id,lookup:lookup,line:this.at().line} as ListIdentifier;
                 }
-                return {kind:"Identifier", symbol:id} as Identifier;
+                return {kind:"Identifier", symbol:id,line:this.at().line} as Identifier;
             case TokenType.Ponto:
-                return {kind:"Dot"} as Dot;
+                return {kind:"Dot",line:this.at().line} as Dot;
             case TokenType.Number:
-                return {kind:"NumericLiteral", value:parseInt(this.advance().value)} as NumericLiteral;
+                return {kind:"NumericLiteral", value:parseInt(this.advance().value),line:this.at().line} as NumericLiteral;
             case TokenType.StringLiteral:
-                return {kind: "StringLiteral",value:this.advance().value} as StringLiteral; 
+                return {kind: "StringLiteral",value:this.advance().value,line:this.at().line} as StringLiteral; 
             case TokenType.Real:
-                return {kind: "RealLiteral",value:parseFloat(this.advance().value)} as RealLiteral;
+                return {kind: "RealLiteral",value:parseFloat(this.advance().value),line:this.at().line} as RealLiteral;
             case TokenType.LParen:
                 this.advance();
                 const value = this.parseStmt();
                 this.eatOnly(TokenType.RParen,"\')\' esperado mas não encontrado.");
+                value.line = this.at().line;
                 return value;
             case TokenType.EOL:
                 this.advance();
-                return {kind:"EOL"} as EndOfLine;
+                return {kind:"EOL",line:this.at().line} as EndOfLine;
             case TokenType.Assignment:
                 this.advance();
                 const valAssign = this.parseStmt();
+                valAssign.line = this.at().line;
                 return valAssign; 
-            case TokenType.RChave:
-                return {kind:"EndScope"} as EndScope;
+            //case TokenType.RChave:
+            //    return {kind:"EndScope",line:this.at().line} as EndScope;
             default:
                 throw reportError("Token inesperado: "+this.at().value, this.at().line);
         }
