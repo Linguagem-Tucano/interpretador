@@ -58,6 +58,8 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return evaluateAttributeLookup(astNode as AttributeLookup, env);
         case "CallLookup":
             return evaluateCallLookup(astNode as CallLookup, env);
+        case "EOL":
+            return MK_NULL();
         default:
             throw reportError("Tipo de nó desconhecido: "+astNode.kind, astNode.line);
     }
