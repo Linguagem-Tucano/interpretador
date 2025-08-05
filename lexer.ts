@@ -53,6 +53,9 @@ export enum TokenType {
     Escreva,
     Escreval,
     Leia,
+    Desenhar,
+    Limpar,
+    Reta,
     Classe,
     Construtor,
     Privado,
@@ -79,11 +82,16 @@ const reservedWordsObj = {
     "ate": TokenType.Ate,
 
     "funcao": TokenType.Funcao,
+    "função": TokenType.Funcao,
     "retorna": TokenType.Retorna,
 
     "escreva": TokenType.Escreva,
     "escreval": TokenType.Escreval,
     "leia": TokenType.Leia,
+
+    "desenhar": TokenType.Desenhar,
+    "reta": TokenType.Reta,
+    "limpar": TokenType.Limpar,
 
     "classe": TokenType.Classe,
     "construtor": TokenType.Construtor,
@@ -155,7 +163,7 @@ function isOpeningOrClosing(str:string) {
 }
 
 function isLetter(str: string):boolean {
-    return /[a-zA-Z]/.test(str);
+    return /[a-zA-Zçã]/.test(str);
 }
 
 function isNumber(str: string):boolean {
@@ -239,6 +247,7 @@ export function tokenize(sourceCode: string): Token[] {
                 while (!isEndOfLine(src[0]) && src.length>0) {
                     src.shift();
                 }
+                lineNumber++;
                 src.shift();
                 if (src.length<=0) {
                     continue;

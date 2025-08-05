@@ -19,18 +19,17 @@ export function repl() {
             break;
         }
 
-        let program = {} as Program;
-        
-        program = parser.produceAST(input);
-
         let result;
         try {
-    
+            let program = {} as Program;
+            program = parser.produceAST(input);
+            
             result = evaluate(program,env);
-        } catch (error) {
-            console.error(error);
+
+            console.log((result as StringVal).value);
+        } catch (_error) {
+            //empty
         }
-        console.log((result as StringVal).value);
         
     }
 }
@@ -40,19 +39,14 @@ export function interpret(text:string) {
     const code = text;
     let program;
 
+    //console.log(program);
     try {
         program = parser.produceAST(code);
-        //console.log(program);
-        try {
-            return evaluate(program,env);
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
-    } catch (error) {
-        console.error(error);
-        throw error;
+        return evaluate(program,env);
+    } catch (_error) {
+        //empty            
     }
+
     
 }
 
