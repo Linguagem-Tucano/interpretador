@@ -99,13 +99,12 @@ export default class Parser {
         this.advance() // engole o reta
         this.eatOnly(TokenType.LParen, "Esperava um '('");
         const x1 = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
+        this.eatOnly(TokenType.Virgula, "Esperava uma ',' 1");
         const y1 = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
+        this.eatOnly(TokenType.Virgula, "Esperava uma ',' 2");
         const x2 = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
+        this.eatOnly(TokenType.Virgula, "Esperava uma ',' 3");
         const y2 = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
         
         const ret = {kind:"RetaExpr",x1,y1,x2,y2} as RetaExpr;
         return ret;
