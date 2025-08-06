@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import Parser from "./parser.ts";
 import { evaluate} from "./interpreter.ts";
 import Environment from "./environment.ts";
@@ -6,6 +7,8 @@ import { Expr, FuncCall, Program, Stmt, StringLiteral } from "./ast.ts";
 
 
 let env = new Environment();
+
+let ctx = undefined as any;
 
 export function repl() {
     const parser = new Parser();
@@ -54,6 +57,10 @@ export function resetEnv() {
     env = new Environment();
 }
 
+export function setCtx(newCtx:any) {
+    ctx = newCtx;
+}
+
 export function callbackFun(funcname:string, argumentos:string[]) {
     if (env.hasFunc(funcname)) {
         const args = [] as Expr[];
@@ -74,6 +81,15 @@ export function reportError(errorMessage:string, line:number) {
     console.error(msg);
     return msg;
     //throw msg;
+}
+
+export function drawLine(x1:number,y1:number,x2:number,y2:number) {
+    if (ctx!=undefined) {
+        ctx.beginPath();
+        ctx.moveTo(x1,y1);
+        ctx.lineTo(x2,y2);
+        ctx.stroke();
+    }
 }
 
 try {

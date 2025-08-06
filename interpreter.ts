@@ -1,7 +1,7 @@
 import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, ListVal, ObjectVal } from "./values.ts";
-import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
+import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, RetaExpr, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
 import Environment from "./environment.ts";
-import { reportError } from "./main.ts";
+import { reportError, drawLine } from "./main.ts";
 
 
 export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
@@ -58,11 +58,24 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return evaluateAttributeLookup(astNode as AttributeLookup, env);
         case "CallLookup":
             return evaluateCallLookup(astNode as CallLookup, env);
+        case "RetaExpr":
+            return evaluateRetaExpr(astNode as RetaExpr, env);
         case "EOL":
             return MK_NULL();
         default:
             throw reportError("Tipo de nó desconhecido: "+astNode.kind, astNode.line);
     }
+}
+
+function evaluateRetaExpr(node: RetaExpr, env:Environment): RuntimeVal {
+    const x1 = evaluate(node.x1,env).value;
+    const y1 = evaluate(node.y1,env).value;
+    const x2 = evaluate(node.x2,env).value;
+    const y2 = evaluate(node.y2,env).value;
+
+    drawLine(x1,y1,x2,y2);
+
+    return MK_NULL();
 }
 
 function evaluateAttributeLookup(node: AttributeLookup, env: Environment): RuntimeVal {

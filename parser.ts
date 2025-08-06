@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-case-declarations
-import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup} from "./ast.ts";
+import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup, RetaExpr} from "./ast.ts";
 import { tokenize, Token, TokenType} from "./lexer.ts";
 import { ValueType } from "./values.ts";
 import { reportError } from "./main.ts";
@@ -87,10 +87,28 @@ export default class Parser {
                 return this.parseConstructor();
             case TokenType.Novo:
                 return this.parseNewObjectExpr();
+            case TokenType.Reta:
+                return this.parseRetaExpr();
             default:
                 return this.parseExpr();
         }
         
+    }
+
+    private parseRetaExpr(): Stmt {
+        this.advance() // engole o reta
+        this.eatOnly(TokenType.LParen, "Esperava um '('");
+        const x1 = this.parseExpr();
+        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
+        const y1 = this.parseExpr();
+        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
+        const x2 = this.parseExpr();
+        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
+        const y2 = this.parseExpr();
+        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
+        
+        const ret = {kind:"RetaExpr",x1,y1,x2,y2} as RetaExpr;
+        return ret;
     }
 
     private parseNewObjectExpr(): Stmt {
