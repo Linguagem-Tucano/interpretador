@@ -83,12 +83,14 @@ export function reportError(errorMessage:string, line:number) {
     //throw msg;
 }
 
-export function drawLine(x1:number,y1:number,x2:number,y2:number) {
+export function drawLine(x1:number,y1:number,x2:number,y2:number,line:number) {
     if (ctx!=undefined) {
         ctx.beginPath();
         ctx.moveTo(x1,y1);
         ctx.lineTo(x2,y2);
         ctx.stroke();
+    } else {
+        throw reportError("Ambiente não suporta gráficos",line)
     }
 }
 

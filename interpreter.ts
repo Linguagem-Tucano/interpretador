@@ -73,7 +73,7 @@ function evaluateRetaExpr(node: RetaExpr, env:Environment): RuntimeVal {
     const x2 = evaluate(node.x2,env).value;
     const y2 = evaluate(node.y2,env).value;
 
-    drawLine(x1,y1,x2,y2);
+    drawLine(x1,y1,x2,y2,node.line);
 
     return MK_NULL();
 }

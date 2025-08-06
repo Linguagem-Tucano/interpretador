@@ -107,7 +107,7 @@ export default class Parser {
         const y2 = this.parseExpr();
         this.eatOnly(TokenType.RParen, "Esperava um ')'")
         
-        const ret = {kind:"RetaExpr",x1,y1,x2,y2} as RetaExpr;
+        const ret = {kind:"RetaExpr",x1,y1,x2,y2,line:this.at().line} as RetaExpr;
         return ret;
     }
 
@@ -620,7 +620,7 @@ export default class Parser {
         const left = this.parseAssignmentExpr();
         if (this.at().type==TokenType.ComparatorOperator) {
             const operator = this.advance().value; //advance past operator
-            const right = this.parseStmt();
+            const right = this.parseAssignmentExpr();
             return {kind:"ComparatorExpr",left,right,operator,line: this.at().line} as ComparatorExpr;
         }
         return left;
@@ -630,7 +630,7 @@ export default class Parser {
         const left = this.parseLogicalExpr();
         if (this.at().type==TokenType.Assignment) {
             this.advance(); //advance past =
-            const value = this.parseStmt();
+            const value = this.parseLogicalExpr();
             return {value, assigne:left,kind:"AssignmentExpr",line: this.at().line} as AssignmentExpr;
         }
         return left;
@@ -641,7 +641,7 @@ export default class Parser {
         //if (this.at().type==TokenType.BinaryOperator) {
             while (this.at().value=="e" || this.at().value=="ou" || this.at().value=="xou") {
                 const operator = this.advance().value;
-                const right = this.parseStmt();
+                const right = this.parseAdditiveExpr();
                 left = {kind:"BinaryExpr",left,right,operator,line: this.at().line} as BinaryExpr;
             }
         //}
@@ -652,7 +652,7 @@ export default class Parser {
         let left = this.parseMultiplicativeExpr();
         while (this.at().value=="+" || this.at().value=="-") {
             const operator = this.advance().value;
-            const right = this.parseStmt();
+            const right = this.parseMultiplicativeExpr();
             left = {kind:"BinaryExpr",left,right,operator,line: this.at().line} as BinaryExpr;
         }
         return left; 
@@ -662,7 +662,7 @@ export default class Parser {
         let left = this.parseExponentialExpr();
         while (this.at().value=="/" || this.at().value=="*" || this.at().value=="%" || this.at().value=="//") {
             const operator = this.advance().value;
-            const right = this.parseStmt();
+            const right = this.parseExponentialExpr();
             left = {kind:"BinaryExpr",left,right,operator,line: this.at().line} as BinaryExpr;
         }
         return left; 
@@ -672,7 +672,7 @@ export default class Parser {
         let left = this.parseAttributeLookup();
         while (this.at().value=="^") {
             const operator = this.advance().value;
-            const right = this.parseStmt();
+            const right = this.parseAttributeLookup();
             left = {kind:"BinaryExpr",left,right,operator,line: this.at().line} as BinaryExpr;
         }
         return left; 
