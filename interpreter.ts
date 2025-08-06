@@ -79,7 +79,7 @@ function evaluateCallLookup(node: CallLookup, env:Environment): RuntimeVal {
     const objEnv = obj.env;
 
     const c = {identifier: node.call, args: node.args, kind:"FuncCall"} as FuncCall;
-    const ret = evaluateFuncCall(c, objEnv);
+    const ret = evaluateFuncCall(c, objEnv, env); //para ele fazer lookup no ambiente normal.
     return ret;
 }
 
@@ -487,7 +487,11 @@ function evaluateIdentifier(identifier:Identifier,env:Environment):RuntimeVal {
     return val;
 }
 
-function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
+function evaluateFuncCall(node: FuncCall, env:Environment, argsEnv?: Environment):RuntimeVal {
+    //check if argsEnv was passed
+    argsEnv = argsEnv ? argsEnv : env;
+
+
     const identifier = node.identifier
     //call function
     const func = env.lookupFunc(identifier);
@@ -511,7 +515,7 @@ function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
         for (let index = 0; index < args.length; index++) {
             const arg = args[index];
             const passed = passedArgs[index];
-            const pArg = evaluate(passed,newEnv);
+            const pArg = evaluate(passed,argsEnv) as RuntimeVal;
             const passedType = pArg.type;
             if (arg.type==passedType || arg.type=="NullVal") {
                 newEnv.declareVar(arg.identifier, pArg, passedType);
