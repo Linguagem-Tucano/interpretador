@@ -495,64 +495,46 @@ function evaluateFuncCall(node: FuncCall, env:Environment):RuntimeVal {
     //get the arguments
     const args = func.args ? func.args : [] as ArgumentExpr[];
     const passedArgs = node.args;
+
+    //check if arguments match
+    if (args.length != passedArgs.length) {
+        throw reportError("Esperava "+args.length+" argumentos, recebi "+passedArgs.length,node.line);
+    }
+
+
     //get the body
     const body = func.body;
     let lastRes = MK_NULL() as RuntimeVal;
     const newEnv = new Environment(env);
     if (args.length>0) {
         //has arguments
-        if (passedArgs.length==args.length) {
-            
-            for (let index = 0; index < args.length; index++) {
-                const arg = args[index];
-                const passed = passedArgs[index];
-                const pArg = evaluate(passed,newEnv);
-                const passedType = pArg.type;
-                if (arg.type==passedType || arg.type=="NullVal") {
-                    newEnv.declareVar(arg.identifier, pArg, passedType);
-                } else {
-                    throw reportError("Esperava argumento número "+(index+1)+" como "+arg.type+" mas recebi "+passedType,node.line);
-                }
+        for (let index = 0; index < args.length; index++) {
+            const arg = args[index];
+            const passed = passedArgs[index];
+            const pArg = evaluate(passed,newEnv);
+            const passedType = pArg.type;
+            if (arg.type==passedType || arg.type=="NullVal") {
+                newEnv.declareVar(arg.identifier, pArg, passedType);
+            } else {
+                throw reportError("Esperava argumento número "+(index+1)+" como "+arg.type+" mas recebi "+passedType,node.line);
             }
-            for (let index = 0; index < body.length; index++) {
-                const s = body[index];
-                if (s.kind=="ReturnExpr") {
-                    let result = evaluate((s as ReturnExpr).value,newEnv);
-                    if (funcType!="NullVal") {
-                        if (funcType=="NumberVal" && result.type=="RealVal") {result=returnNumber(result as RealVal); result.type="NumberVal";}
-                        if (funcType=="RealVal" && result.type=="NumberVal") {result=returnReal(result); result.type="RealVal";}
-                        if (result.type!=funcType) {throw "Função retornou valor inválido, esperava "+funcType+" e recebi "+result.type;}
-                        
-                        return result;
-                    } else {
-                        return result;
-                    }
-                }    
-                const curr = evaluate(s, newEnv);
-                lastRes=curr;
+        }        
+    }
+    for (let index = 0; index < body.length; index++) {
+        const s = body[index];    
+        if (s.kind=="ReturnExpr") {
+            let result = evaluate((s as ReturnExpr).value,newEnv);
+            if (funcType!="NullVal") {
+                if (funcType=="NumberVal" && result.type=="RealVal") {result=returnNumber(result as RealVal); result.type="NumberVal";}
+                if (funcType=="RealVal" && result.type=="NumberVal") {result=returnReal(result); result.type="RealVal";}
+                if (result.type!=funcType) {throw reportError("Função retornou valor inválido, esperava "+funcType+" e recebi "+result.type,node.line);} 
+                return result;
+            } else {
+                return result;
             }
-        } else {
-            throw reportError("Esperava "+args.length+" argumentos, recebi "+passedArgs.length,node.line);
-        }
-    } else {
-        //no arguments
-        
-        for (let index = 0; index < body.length; index++) {
-            const s = body[index];    
-            if (s.kind=="ReturnExpr") {
-                let result = evaluate((s as ReturnExpr).value,newEnv);
-                if (funcType!="NullVal") {
-                    if (funcType=="NumberVal" && result.type=="RealVal") {result=returnNumber(result as RealVal); result.type="NumberVal";}
-                    if (funcType=="RealVal" && result.type=="NumberVal") {result=returnReal(result); result.type="RealVal";}
-                    if (result.type!=funcType) {throw reportError("Função retornou valor inválido, esperava "+funcType+" e recebi "+result.type,node.line);} 
-                    return result;
-                } else {
-                    return result;
-                }
-            }   
-            const curr = evaluate(s, newEnv);
-            lastRes=curr;
-        }
+        }   
+        const curr = evaluate(s, newEnv);
+        lastRes=curr;
     }
     return lastRes;
 }

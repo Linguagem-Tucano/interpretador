@@ -339,7 +339,7 @@ export function tokenize(sourceCode: string): Token[] {
                 const type = reservedWords.get(text) as TokenType;
                 tokens.push(token(text,type,lineNumber));
             } else if (text!="") {
-                tokens.push(token(text,TokenType.Identifier,lineNumber))
+                tokens.push(token(text,TokenType.Identifier,lineNumber));
             }
             continue;
         }
