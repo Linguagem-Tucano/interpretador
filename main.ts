@@ -97,7 +97,8 @@ export function drawLine(x1:number,y1:number,x2:number,y2:number,line:number) {
 export function drawImage(x:number,y:number,w:number,h:number,img:string,line:number) {
     if (ctx!=undefined) {
         ctx.beginPath();
-        ctx.drawImage(img, x, y, w, h);
+        const image = document.getElementById(img);
+        ctx.drawImage(image, x, y, w, h);
         ctx.stroke();
     } else {
         throw reportError("Ambiente não suporta gráficos",line)
