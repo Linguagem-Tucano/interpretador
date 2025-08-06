@@ -176,11 +176,11 @@ export interface RetaExpr extends Expr {
 
 export interface DesenharExpr extends Expr {
     kind: "DesenharExpr";
-    x:number;
-    y:number;
-    w:number;
-    h:number;
-    img:string;
+    x:Expr;
+    y:Expr;
+    w:Expr;
+    h:Expr;
+    img:Expr;
 }
 
 export interface LimparExpr extends Expr {

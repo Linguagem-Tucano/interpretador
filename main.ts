@@ -94,6 +94,24 @@ export function drawLine(x1:number,y1:number,x2:number,y2:number,line:number) {
     }
 }
 
+export function drawImage(x:number,y:number,w:number,h:number,img:string,line:number) {
+    if (ctx!=undefined) {
+        ctx.beginPath();
+        ctx.drawImage(img, x, y, w, h);
+        ctx.stroke();
+    } else {
+        throw reportError("Ambiente não suporta gráficos",line)
+    }
+}
+
+export function clearCanvas(line:number) {
+    if (ctx!=undefined) {
+        ctx.clearRect(0, 0, 1920,1080);
+    } else {
+        throw reportError("Ambiente não suporta gráficos",line)
+    }
+}
+
 try {
     if (Deno.args.length>=1) {
         // idk man just suck it up

@@ -1,7 +1,7 @@
 import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, ListVal, ObjectVal } from "./values.ts";
-import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, RetaExpr, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
+import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, DesenharExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, LimparExpr, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, RetaExpr, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
 import Environment from "./environment.ts";
-import { reportError, drawLine } from "./main.ts";
+import { reportError, drawLine, drawImage, clearCanvas } from "./main.ts";
 
 
 export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
@@ -60,6 +60,10 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return evaluateCallLookup(astNode as CallLookup, env);
         case "RetaExpr":
             return evaluateRetaExpr(astNode as RetaExpr, env);
+        case "DesenharExpr":
+            return evaluateDesenharExpr(astNode as DesenharExpr, env);
+        case "LimparExpr":
+            return evaluateLimparExpr(astNode as LimparExpr, env);
         case "EOL":
             return MK_NULL();
         default:
@@ -75,6 +79,23 @@ function evaluateRetaExpr(node: RetaExpr, env:Environment): RuntimeVal {
 
     drawLine(x1,y1,x2,y2,node.line);
 
+    return MK_NULL();
+}
+
+function evaluateDesenharExpr(node: DesenharExpr, env:Environment): RuntimeVal {
+    const x = evaluate(node.x,env).value;
+    const y = evaluate(node.y,env).value;
+    const w = evaluate(node.w,env).value;
+    const h = evaluate(node.h,env).value;
+    const img = evaluate(node.img,env).value;
+
+    drawImage(x,y,w,h,img,node.line);
+
+    return MK_NULL();
+}
+
+function evaluateLimparExpr(node: LimparExpr, env:Environment): RuntimeVal {
+    clearCanvas(node.line);
     return MK_NULL();
 }
 

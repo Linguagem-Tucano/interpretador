@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-case-declarations
-import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup, RetaExpr} from "./ast.ts";
+import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup, RetaExpr, DesenharExpr, LimparExpr} from "./ast.ts";
 import { tokenize, Token, TokenType} from "./lexer.ts";
 import { ValueType } from "./values.ts";
 import { reportError } from "./main.ts";
@@ -89,10 +89,42 @@ export default class Parser {
                 return this.parseNewObjectExpr();
             case TokenType.Reta:
                 return this.parseRetaExpr();
+            case TokenType.Desenhar:
+                return this.parseDesenharExpr();
+            case TokenType.Limpar:
+                return this.parseLimparExpr();
             default:
                 return this.parseExpr();
         }
         
+    }
+
+    private parseLimparExpr(): Stmt {
+        this.advance() //go past limpar
+        this.eatOnly(TokenType.LParen, "Esperava um '('");
+        
+        this.eatOnly(TokenType.RParen, "Esperava um ')'");
+
+        const ret = {kind:"LimparExpr"} as LimparExpr;
+        return ret;
+    }
+
+    private parseDesenharExpr(): Stmt {
+        this.advance() //go past desnehar
+        this.eatOnly(TokenType.LParen, "Esperava um '('");
+        const x = this.parseExpr();
+        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
+        const y = this.parseExpr();
+        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
+        const w = this.parseExpr();
+        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
+        const h = this.parseExpr();
+        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
+        const img = this.parseExpr();
+        this.eatOnly(TokenType.RParen, "Esperava um ')'");
+
+        const ret = {kind:"DesenharExpr", x, y, w, h, img} as DesenharExpr;
+        return ret;
     }
 
     private parseRetaExpr(): Stmt {
