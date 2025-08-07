@@ -55,6 +55,7 @@ export enum TokenType {
     Leia,
     Desenhar,
     Limpar,
+    Imprima,
     Reta,
     Classe,
     Construtor,
@@ -91,9 +92,10 @@ const reservedWordsObj = {
     "escreval": TokenType.Escreval,
     "leia": TokenType.Leia,
 
-    "desenhar": TokenType.Desenhar,
+    "desenhe": TokenType.Desenhar,
     "reta": TokenType.Reta,
-    "limpar": TokenType.Limpar,
+    "limpe": TokenType.Limpar,
+    "imprima": TokenType.Imprima,
 
     "classe": TokenType.Classe,
     "construtor": TokenType.Construtor,
@@ -102,7 +104,7 @@ const reservedWordsObj = {
     "publico": TokenType.Publico,
     "novo": TokenType.Novo,
 
-    "converter": TokenType.Converter,
+    "converta": TokenType.Converter,
 }
 
 export const reservedWords = new Map<string, TokenType>(Object.entries(reservedWordsObj));

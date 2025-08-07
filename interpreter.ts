@@ -1,7 +1,7 @@
 import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, ListVal, ObjectVal } from "./values.ts";
-import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, ConvertExpr, DesenharExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, LimparExpr, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, RetaExpr, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
+import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, ConvertExpr, DesenharExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, ImprimaExpr, InputStmt, LimparExpr, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, RetaExpr, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
 import Environment from "./environment.ts";
-import { reportError, drawLine, drawImage, clearCanvas } from "./main.ts";
+import { reportError, drawLine, drawImage, clearCanvas, drawText } from "./main.ts";
 
 
 export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
@@ -66,11 +66,23 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return evaluateLimparExpr(astNode as LimparExpr, env);
         case "ConvertExpr":
             return evaluateConvertExpr(astNode as ConvertExpr, env);
+        case "ImprimaExpr":
+            return evaluateImprimaExpr(astNode as ImprimaExpr, env);
         case "EOL":
             return MK_NULL();
         default:
             throw reportError("Tipo de nó desconhecido: "+astNode.kind, astNode.line);
     }
+}
+
+function evaluateImprimaExpr(node: ImprimaExpr, env:Environment): RuntimeVal {
+    const x = evaluate(node.x,env).value;
+    const y = evaluate(node.y,env).value;
+    const value = evaluate(node.value,env).value;
+
+    drawText(x,y,value,50,node.line);
+
+    return MK_NULL();
 }
 
 function evaluateConvertExpr(node: ConvertExpr, env:Environment): RuntimeVal {

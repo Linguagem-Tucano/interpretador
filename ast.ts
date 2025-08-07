@@ -44,6 +44,7 @@ export type nodeType =
 | "RetaExpr"
 | "DesenharExpr"
 | "LimparExpr"
+| "ImprimaExpr"
 
 | "AttributeLookup"
 | "CallLookup"
@@ -199,6 +200,13 @@ export interface DesenharExpr extends Expr {
 
 export interface LimparExpr extends Expr {
     kind: "LimparExpr";
+}
+
+export interface ImprimaExpr extends Stmt {
+    kind: "ImprimaExpr";
+    x:Expr;
+    y:Expr;
+    value: Expr;
 }
 
 export interface BinaryExpr extends Expr {

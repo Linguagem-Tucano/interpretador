@@ -119,6 +119,15 @@ export function clearCanvas(line:number) {
     }
 }
 
+export function drawText(x:number,y:number,text:string,size:number,line:number) {
+    if (ctx!=undefined) {
+        ctx.font = size+"px Arial";
+        ctx.fillText(text,x,y);
+    } else {
+        throw reportError("Ambiente não suporta gráficos",line)
+    }
+}
+
 try {
     if (Deno.args.length>=1) {
         // idk man just suck it up
