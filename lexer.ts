@@ -68,7 +68,7 @@ const reservedWordsObj = {
     "var": TokenType.Var,
     "int": TokenType.Int,
     "caractere": TokenType.Caractere,
-    "real": TokenType.Real,
+    "real": TokenType.RealWord,
     "logico": TokenType.Logico,
     
     "se": TokenType.Se,
