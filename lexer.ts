@@ -191,7 +191,8 @@ function isWhiteSpace(str:string):boolean {
 }
 
 function isReservedWord(str:string):boolean {
-    return reservedWords.has(str);
+    console.log(str.toLowerCase());
+    return reservedWords.has(str.toLowerCase());
 }
 
 function token(value:string,type:TokenType, line: number): Token {

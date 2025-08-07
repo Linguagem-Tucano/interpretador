@@ -4,6 +4,7 @@ import { evaluate} from "./interpreter.ts";
 import Environment from "./environment.ts";
 import { StringVal } from "./values.ts";
 import { Expr, FuncCall, Program, Stmt, StringLiteral } from "./ast.ts";
+import { tokenize } from "./lexer.ts";
 
 
 let env = new Environment();
@@ -63,6 +64,8 @@ export function setCtx(newCtx:any) {
 
 export function callbackFun(funcname:string, argumentos:string[]) {
     if (env.hasFunc(funcname)) {
+        
+        
         const args = [] as Expr[];
         for (let i = 0; i < argumentos.length; i++) {
             const arg = argumentos[i];
@@ -96,10 +99,12 @@ export function drawLine(x1:number,y1:number,x2:number,y2:number,line:number) {
 
 export function drawImage(x:number,y:number,w:number,h:number,img:string,line:number) {
     if (ctx!=undefined) {
-        ctx.beginPath();
         const image = document.getElementById(img);
-        ctx.drawImage(image, x, y, w, h);
-        ctx.stroke();
+        if (image) {
+            ctx.drawImage(image, x, y, w, h);
+        } else {
+            throw reportError("Objeto "+img+" não encontrado",line);
+        }
     } else {
         throw reportError("Ambiente não suporta gráficos",line)
     }
@@ -107,7 +112,7 @@ export function drawImage(x:number,y:number,w:number,h:number,img:string,line:nu
 
 export function clearCanvas(line:number) {
     if (ctx!=undefined) {
-        ctx.clearRect(0, 0, 1920,1080);
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     } else {
         throw reportError("Ambiente não suporta gráficos",line)
     }

@@ -50,7 +50,7 @@ export default class Parser {
         return this.tokens[0].type!=TokenType.EOF;
     }
 
-    private parseStmt():Stmt {
+    public parseStmt():Stmt {
         //this is not going to work man...
         switch (this.at().type) {
             case TokenType.Var:
