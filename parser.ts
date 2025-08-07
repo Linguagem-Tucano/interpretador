@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-case-declarations
-import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup, RetaExpr, DesenharExpr, LimparExpr} from "./ast.ts";
+import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup, RetaExpr, DesenharExpr, LimparExpr, ConvertExpr} from "./ast.ts";
 import { tokenize, Token, TokenType} from "./lexer.ts";
 import { ValueType } from "./values.ts";
 import { reportError } from "./main.ts";
@@ -93,10 +93,43 @@ export default class Parser {
                 return this.parseDesenharExpr();
             case TokenType.Limpar:
                 return this.parseLimparExpr();
+            case TokenType.Converter:
+                return this.parseConvertExpr();
             default:
                 return this.parseExpr();
         }
         
+    }
+
+    private parseConvertExpr(): Stmt {
+        // converter(expr para tipo)
+        this.advance(); //go past converter
+        this.eatOnly(TokenType.LParen, "Esperava um '('");
+        const value = this.parseExpr();
+        this.eatOnly(TokenType.Para, "Esperava um 'para'");
+        const typeToken = this.advance();
+        let type: ValueType;
+        switch(typeToken.type) {
+            case TokenType.Int:
+                type = "NumberVal";
+                break;
+            case TokenType.Caractere:
+                type = "StringVal";
+                break;
+            case TokenType.RealWord:
+                type = "RealVal";
+                break;
+            case TokenType.Logico:
+                type = "BooleanVal";
+                break;
+            case TokenType.Var:
+                type = "NullVal";
+                break;
+            default:
+                throw reportError("Esperava um tipo válido de variável. Recebi: "+typeToken.value, this.at().line);
+        }
+        this.eatOnly(TokenType.RParen, "Esperava um ')'");
+        return {kind:"ConvertExpr", value, type, line:this.at().line} as ConvertExpr;
     }
 
     private parseLimparExpr(): Stmt {
@@ -105,7 +138,7 @@ export default class Parser {
         
         this.eatOnly(TokenType.RParen, "Esperava um ')'");
 
-        const ret = {kind:"LimparExpr"} as LimparExpr;
+        const ret = {kind:"LimparExpr",line:this.at().line} as LimparExpr;
         return ret;
     }
 
@@ -123,7 +156,7 @@ export default class Parser {
         const img = this.parseExpr();
         this.eatOnly(TokenType.RParen, "Esperava um ')'");
 
-        const ret = {kind:"DesenharExpr", x, y, w, h, img} as DesenharExpr;
+        const ret = {kind:"DesenharExpr", x, y, w, h, img, line:this.at().line} as DesenharExpr;
         return ret;
     }
 

@@ -36,6 +36,8 @@ export type nodeType =
 | "ReturnExpr"
 | "ArgumentExpr"
 
+| "ConvertExpr"
+
 | "InputStmt"
 | "OutputStmt"
 
@@ -165,6 +167,18 @@ export interface ArgumentExpr extends Expr {
 }
 
 export interface Expr extends Stmt {}
+
+export interface UnaryExpr extends Expr {
+    kind: "UnaryExpr";
+    operator: string;
+    value: Expr;
+}
+
+export interface ConvertExpr extends Expr {
+    kind: "ConvertExpr";
+    value: Expr;
+    type: ValueType;
+}
 
 export interface RetaExpr extends Expr {
     kind: "RetaExpr";

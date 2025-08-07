@@ -1,5 +1,5 @@
 import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, ListVal, ObjectVal } from "./values.ts";
-import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, DesenharExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, LimparExpr, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, RetaExpr, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
+import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, ConvertExpr, DesenharExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, InputStmt, LimparExpr, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, RetaExpr, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
 import Environment from "./environment.ts";
 import { reportError, drawLine, drawImage, clearCanvas } from "./main.ts";
 
@@ -64,10 +64,65 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return evaluateDesenharExpr(astNode as DesenharExpr, env);
         case "LimparExpr":
             return evaluateLimparExpr(astNode as LimparExpr, env);
+        case "ConvertExpr":
+            return evaluateConvertExpr(astNode as ConvertExpr, env);
         case "EOL":
             return MK_NULL();
         default:
             throw reportError("Tipo de nó desconhecido: "+astNode.kind, astNode.line);
+    }
+}
+
+function evaluateConvertExpr(node: ConvertExpr, env:Environment): RuntimeVal {
+    const value = evaluate(node.value, env);
+    const firstType = value.type as ValueType;
+    const desiredType = node.type as ValueType;
+
+    switch (desiredType) {
+        case "StringVal":
+            if (firstType=="NumberVal") {
+                return {type:"StringVal", value:value.value.toString()} as StringVal;
+            } else if (firstType=="RealVal") {
+                return {type:"StringVal", value:value.value.toFixed(2)} as StringVal;
+            } else if (firstType=="BooleanVal") {
+                return {type:"StringVal", value:value.value ? "verdadeiro" : "falso"} as StringVal;
+            } else if (firstType=="ListVal") {
+                const list = value as ListVal;
+                const strList = list.value.map(item => item.value).join(", ");
+                return {type:"StringVal", value:strList} as StringVal;
+            } else {
+                throw reportError("Não é possível converter "+firstType+" para caractere.", node.line);
+            }
+        case "NumberVal":
+            if (firstType=="StringVal") {
+                const num = parseInt(value.value, 10);
+                if (isNaN(num)) {
+                    throw reportError("Não é possível converter '"+value.value+"' para número.", node.line);
+                }
+                return {type:"NumberVal", value:num} as NumberVal;
+            } else if (firstType=="RealVal") {
+                return {type:"NumberVal", value:Math.floor((value as RealVal).value)} as NumberVal;
+            } else if (firstType=="BooleanVal") {
+                return {type:"NumberVal", value:value.value ? 1 : 0} as NumberVal;
+            } else {
+                throw reportError("Não é possível converter "+firstType+" para inteiro.", node.line);
+            }
+        case "RealVal":
+            if (firstType=="StringVal") {
+                const num = parseFloat(value.value);
+                if (isNaN(num)) {
+                    throw reportError("Não é possível converter '"+value.value+"' para real.", node.line);
+                }
+                return {type:"RealVal", value:num} as RealVal;
+            } else if (firstType=="NumberVal") {
+                return {type:"RealVal", value:value.value} as RealVal;
+            } else if (firstType=="BooleanVal") {
+                return {type:"RealVal", value:value.value ? 1.0 : 0.0} as RealVal;
+            } else {
+                throw reportError("Não é possível converter "+firstType+" para real.", node.line);
+            }
+        default:
+            throw reportError("Tipo de conversão desconhecido: "+desiredType, node.line);
     }
 }
 
@@ -94,7 +149,7 @@ function evaluateDesenharExpr(node: DesenharExpr, env:Environment): RuntimeVal {
     return MK_NULL();
 }
 
-function evaluateLimparExpr(node: LimparExpr, env:Environment): RuntimeVal {
+function evaluateLimparExpr(node: LimparExpr, _env:Environment): RuntimeVal {
     clearCanvas(node.line);
     return MK_NULL();
 }

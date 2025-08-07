@@ -61,7 +61,8 @@ export enum TokenType {
     Privado,
     Protegido,
     Publico,
-    Novo
+    Novo,
+    Converter,
 }
 const reservedWordsObj = {
     "var": TokenType.Var,
@@ -80,6 +81,7 @@ const reservedWordsObj = {
     "enquanto": TokenType.Enquanto,
     "repita": TokenType.Repita,
     "ate": TokenType.Ate,
+    "até": TokenType.Ate,
 
     "funcao": TokenType.Funcao,
     "função": TokenType.Funcao,
@@ -98,7 +100,9 @@ const reservedWordsObj = {
     "privado": TokenType.Privado,
     "protegido": TokenType.Protegido,
     "publico": TokenType.Publico,
-    "novo": TokenType.Novo
+    "novo": TokenType.Novo,
+
+    "converter": TokenType.Converter,
 }
 
 export const reservedWords = new Map<string, TokenType>(Object.entries(reservedWordsObj));
@@ -163,7 +167,8 @@ function isOpeningOrClosing(str:string) {
 }
 
 function isLetter(str: string):boolean {
-    return /[a-zA-Zçã]/.test(str);
+    str = str.toLowerCase();
+    return /[a-zA-Zçãé]/.test(str);
 }
 
 function isNumber(str: string):boolean {
