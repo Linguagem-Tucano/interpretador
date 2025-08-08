@@ -596,7 +596,6 @@ function evaluateFuncCall(node: FuncCall, env:Environment, argsEnv?: Environment
     const identifier = node.identifier
     //call function
     const func = env.lookupFunc(identifier);
-    const funcType = func.type as ValueType;
     //get the arguments
     const args = func.args ? func.args : [] as ArgumentExpr[];
     const passedArgs = node.args;
@@ -606,10 +605,6 @@ function evaluateFuncCall(node: FuncCall, env:Environment, argsEnv?: Environment
         throw reportError("Esperava "+args.length+" argumentos, recebi "+passedArgs.length,node.line);
     }
 
-
-    //get the body
-    const body = func.body;
-    let lastRes = MK_NULL() as RuntimeVal;
     const newEnv = new Environment(env);
     if (args.length>0) {
         //has arguments
@@ -625,39 +620,7 @@ function evaluateFuncCall(node: FuncCall, env:Environment, argsEnv?: Environment
             }
         }        
     }
-    for (let index = 0; index < body.length; index++) {
-        const s = body[index];    
-        if (s.kind=="ReturnExpr") {
-            let result = evaluate((s as ReturnExpr).value,newEnv);
-            if (funcType!="NullVal") {
-                if (funcType=="NumberVal" && result.type=="RealVal") {result=returnNumber(result as RealVal); result.type="NumberVal";}
-                if (funcType=="RealVal" && result.type=="NumberVal") {result=returnReal(result); result.type="RealVal";}
-                if (result.type!=funcType) {throw reportError("Função retornou valor inválido, esperava "+funcType+" e recebi "+result.type,node.line);} 
-                return result;
-            } else {
-                return result;
-            }
-        }   
-        const curr = evaluate(s, newEnv);
-        lastRes=curr;
-    }
-    return lastRes;
-}
-
-function returnReal(val:RuntimeVal):RuntimeVal {
-    if(val.type=="NumberVal") {
-        return (val as RealVal);
-    }
-    return MK_NULL();
-}
-
-function returnNumber(val:RealVal):NumberVal {
-    //if(val.type=="RealVal") {
-        val.value=Math.floor(val.value);
-        let result = (val as unknown);
-        return result = (result as NumberVal);
-    //}
-    //return MK_NULL();
+    return func.call(newEnv);
 }
 
 function evaluateBinaryExpr(binop: BinaryExpr, env: Environment):RuntimeVal {

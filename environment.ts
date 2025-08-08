@@ -1,16 +1,25 @@
 import { Class, FuncDecl } from "./ast.ts";
 import { BooleanVal, MK_NULL, RuntimeVal, ValueType } from "./values.ts";
+import { Function } from "./function.ts";
+import { reportError } from "./main.ts";
 
 function setupScope(env: Environment) {
     env.declareVar("verdadeiro",{type:"BooleanVal",value:true} as BooleanVal,"BooleanVal");
     env.declareVar("falso",{type:"BooleanVal",value:false} as BooleanVal,"BooleanVal");
     env.declareVar("nulo",MK_NULL(),"NullVal");
+    const nowClock = Date.now();
+    const clockFn = new Function([],[]);
+    clockFn.call = function(_env: Environment) {
+        const ms = Date.now() - nowClock;
+        return {type:"RealVal",value:ms/1000} as RuntimeVal;
+    }
+    env.functions.set("relogio",clockFn);
 }
 
 export default class Environment {
     private parent?: Environment;
     private variables: Map<string,RuntimeVal>;
-    private functions: Map<string,FuncDecl>;
+    public functions: Map<string,Function>;
     private classes: Map<string,Class>;
 
     constructor (parentENV?: Environment) {
@@ -64,9 +73,9 @@ export default class Environment {
         return this.parent.resolveFunc(funcname);
     }
 
-    public lookupFunc(funcname:string): FuncDecl {
+    public lookupFunc(funcname:string): Function {
         const env = this.resolveFunc(funcname);
-        return env.functions.get(funcname) as FuncDecl;
+        return env.functions.get(funcname) as Function;
     }
 
     public hasVar(varname:string): boolean {
@@ -92,8 +101,11 @@ export default class Environment {
 
     public declareFunc(func:FuncDecl) {
         const identifier = func.identifier;
-        if (this.functions.has(identifier)) {throw "Função "+identifier+" já declarada";}
-        this.functions.set(identifier,func);
+        if (this.functions.has(identifier)) {throw reportError("Função "+identifier+" já declarada",func.line);}
+        const functionBody = func.body;
+        const args = func.args;
+        const fun = new Function(functionBody,args);
+        this.functions.set(identifier,fun);
         return func
     }
 

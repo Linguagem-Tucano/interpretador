@@ -187,6 +187,7 @@ export interface RetaExpr extends Expr {
     y1:Expr;
     x2:Expr;
     y2:Expr;
+    thickness:Expr;
 }
 
 export interface DesenharExpr extends Expr {
@@ -207,6 +208,7 @@ export interface ImprimaExpr extends Stmt {
     x:Expr;
     y:Expr;
     value: Expr;
+    size: Expr;
 }
 
 export interface BinaryExpr extends Expr {
