@@ -121,6 +121,8 @@ export function clearCanvas() {
 export function drawText(x:number,y:number,text:string,size:number) {
     if (ctx!=undefined) {
         ctx.font = size+"px Arial";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
         ctx.fillText(text,x,y);
     } else {
         throw "Ambiente não suporta gráficos";
