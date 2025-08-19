@@ -5,7 +5,6 @@ import { reportError } from "./main.ts";
 import { setupEnv } from "./globals.ts";
 
 function setupScope(env: Environment) {
-    console.log("Inicializando ambiente global");
     setupEnv(env);
 }
 
