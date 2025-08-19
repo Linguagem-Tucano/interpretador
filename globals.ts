@@ -61,7 +61,7 @@ export function setupEnv(env: Environment) {
     env.functions.set("leia", leia);
 
     const leiaNum = new Function([],[arg]);
-    leia.call = function(_env: Environment) {
+    leiaNum.call = function(_env: Environment) {
         const text = _env.lookupVar("text");
         const input = prompt(text.value as string);
         const res = Number.parseFloat(input as string);
@@ -70,7 +70,7 @@ export function setupEnv(env: Environment) {
         }
         return {type:"RealVal",value:res} as RuntimeVal;
     }
-    env.functions.set("leianum", leia);
+    env.functions.set("leianum", leiaNum);
 
 
 
