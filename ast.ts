@@ -38,14 +38,6 @@ export type nodeType =
 
 | "ConvertExpr"
 
-| "InputStmt"
-| "OutputStmt"
-
-| "RetaExpr"
-| "DesenharExpr"
-| "LimparExpr"
-| "ImprimaExpr"
-
 | "AttributeLookup"
 | "CallLookup"
 
@@ -88,19 +80,6 @@ export interface ObjectLiteral extends Expr {
 export interface ClassConstructor extends Stmt {
     kind: "ClassConstructor";
     function: FuncDecl;
-}
-
-
-export interface InputStmt extends Stmt {
-    kind: "InputStmt";
-    text?: Expr;
-    varname?: string;
-}
-
-export interface OutputStmt extends Stmt {
-    kind: "OutputStmt";
-    value: Expr;
-    final: string;
 }
 
 export interface IfStmt extends Stmt {
@@ -179,36 +158,6 @@ export interface ConvertExpr extends Expr {
     kind: "ConvertExpr";
     value: Expr;
     type: ValueType;
-}
-
-export interface RetaExpr extends Expr {
-    kind: "RetaExpr";
-    x1:Expr;
-    y1:Expr;
-    x2:Expr;
-    y2:Expr;
-    thickness:Expr;
-}
-
-export interface DesenharExpr extends Expr {
-    kind: "DesenharExpr";
-    x:Expr;
-    y:Expr;
-    w:Expr;
-    h:Expr;
-    img:Expr;
-}
-
-export interface LimparExpr extends Expr {
-    kind: "LimparExpr";
-}
-
-export interface ImprimaExpr extends Stmt {
-    kind: "ImprimaExpr";
-    x:Expr;
-    y:Expr;
-    value: Expr;
-    size: Expr;
 }
 
 export interface BinaryExpr extends Expr {

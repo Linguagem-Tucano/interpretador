@@ -1,7 +1,8 @@
+// deno-lint-ignore-file no-case-declarations
 import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, ListVal, ObjectVal } from "./values.ts";
-import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, ConvertExpr, DesenharExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, ImprimaExpr, InputStmt, LimparExpr, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, OutputStmt, Program, RealLiteral, RetaExpr, ReturnExpr, Stmt, StringLiteral, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
+import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, ConvertExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UnaryExpr, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
 import Environment from "./environment.ts";
-import { reportError, drawLine, drawImage, clearCanvas, drawText } from "./main.ts";
+import { reportError } from "./main.ts";
 
 
 export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
@@ -46,10 +47,6 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return evaluateFuncCall(astNode as FuncCall, env);
         case "Class":
             return evaluateClassDecl(astNode as Class, env);
-        case "OutputStmt":
-            return evaluateOutputStmt(astNode as OutputStmt, env);
-        case "InputStmt":
-            return evaluateInputStmt(astNode as InputStmt, env);
         case "ReturnExpr":
             return evaluateReturnExpr(astNode as ReturnExpr, env);
         case "NewObjectExpr":
@@ -58,16 +55,10 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return evaluateAttributeLookup(astNode as AttributeLookup, env);
         case "CallLookup":
             return evaluateCallLookup(astNode as CallLookup, env);
-        case "RetaExpr":
-            return evaluateRetaExpr(astNode as RetaExpr, env);
-        case "DesenharExpr":
-            return evaluateDesenharExpr(astNode as DesenharExpr, env);
-        case "LimparExpr":
-            return evaluateLimparExpr(astNode as LimparExpr, env);
         case "ConvertExpr":
             return evaluateConvertExpr(astNode as ConvertExpr, env);
-        case "ImprimaExpr":
-            return evaluateImprimaExpr(astNode as ImprimaExpr, env);
+        case "UnaryExpr":
+            return evaluateUnaryExpr(astNode as UnaryExpr, env);
         case "EOL":
             return MK_NULL();
         default:
@@ -75,14 +66,20 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
     }
 }
 
-function evaluateImprimaExpr(node: ImprimaExpr, env:Environment): RuntimeVal {
-    const x = evaluate(node.x,env).value;
-    const y = evaluate(node.y,env).value;
-    const value = evaluate(node.value,env).value;
-
-    drawText(x,y,value,50,node.line);
-
-    return MK_NULL();
+function evaluateUnaryExpr(node: UnaryExpr, env: Environment): RuntimeVal {
+    switch (node.operator) {
+        case "nao":
+            return MK_NULL();
+        case "-":
+            const val = evaluate(node.value, env);
+            if (val.type!="NumberVal" && val.type!="RealVal") {
+                throw reportError("Tentou negar um valor não numérico",node.line);
+            }
+            val.value = (-1) * val.value;
+            return val;
+        default:
+            throw reportError("Operador unário desconhecido: "+node.operator,node.line);
+    }
 }
 
 function evaluateConvertExpr(node: ConvertExpr, env:Environment): RuntimeVal {
@@ -138,34 +135,6 @@ function evaluateConvertExpr(node: ConvertExpr, env:Environment): RuntimeVal {
     }
 }
 
-function evaluateRetaExpr(node: RetaExpr, env:Environment): RuntimeVal {
-    const x1 = evaluate(node.x1,env).value;
-    const y1 = evaluate(node.y1,env).value;
-    const x2 = evaluate(node.x2,env).value;
-    const y2 = evaluate(node.y2,env).value;
-
-    drawLine(x1,y1,x2,y2,node.line);
-
-    return MK_NULL();
-}
-
-function evaluateDesenharExpr(node: DesenharExpr, env:Environment): RuntimeVal {
-    const x = evaluate(node.x,env).value;
-    const y = evaluate(node.y,env).value;
-    const w = evaluate(node.w,env).value;
-    const h = evaluate(node.h,env).value;
-    const img = evaluate(node.img,env).value;
-
-    drawImage(x,y,w,h,img,node.line);
-
-    return MK_NULL();
-}
-
-function evaluateLimparExpr(node: LimparExpr, _env:Environment): RuntimeVal {
-    clearCanvas(node.line);
-    return MK_NULL();
-}
-
 function evaluateAttributeLookup(node: AttributeLookup, env: Environment): RuntimeVal {
     const obj = lookupVar(node,node.symbol,env) as ObjectVal;
     const objEnv = obj.env;
@@ -179,7 +148,7 @@ function evaluateCallLookup(node: CallLookup, env:Environment): RuntimeVal {
     const obj = lookupVar(node,node.symbol,env) as ObjectVal;
     const objEnv = obj.env;
 
-    const c = {identifier: node.call, args: node.args, kind:"FuncCall"} as FuncCall;
+    const c = {identifier: node.call, args: node.args, kind:"FuncCall",line:node.line} as FuncCall;
     const ret = evaluateFuncCall(c, objEnv, env); //para ele fazer lookup no ambiente normal.
     return ret;
 }
@@ -281,33 +250,6 @@ function evaluateListLiteral(node: ListLiteral, env:Environment): RuntimeVal {
         list.push(v);
     }
     return {type:"ListVal", value:list, listType:type} as ListVal;
-}
-
-function evaluateOutputStmt(node: OutputStmt, env:Environment): RuntimeVal {
-    const value = node.value;
-    if (value!=undefined) {
-        const text = evaluate(value,env) as StringVal;
-        appendOutput(text.value+node.final);
-    }
-    return MK_NULL();
-}
-
-function evaluateInputStmt(node: InputStmt, env: Environment): RuntimeVal {
-    let promptText = "";
-    if (node.text) {
-        promptText = evaluate(node.text, env).value;
-    }
-    const ret = prompt(promptText);
-    const val = { type: "StringVal", value: ret } as StringVal;
-    if (node.varname) {
-        if (env.hasVar(node.varname)) {
-            env.assignVar(node.varname, val);
-        }
-        else {
-            env.declareVar(node.varname, val, val.type);
-        }
-    }
-    return val;
 }
 
 function evaluateReturnExpr(node: ReturnExpr, env:Environment):RuntimeVal {
@@ -620,7 +562,11 @@ function evaluateFuncCall(node: FuncCall, env:Environment, argsEnv?: Environment
             }
         }        
     }
-    return func.call(newEnv);
+    try {
+        return func.call(newEnv);
+    } catch (error) {
+        throw reportError(error as string, node.line);
+    }
 }
 
 function evaluateBinaryExpr(binop: BinaryExpr, env: Environment):RuntimeVal {
@@ -713,7 +659,7 @@ function evaluateNumericBinaryExpr(left: RealVal, right: RealVal, op: string):Re
 }
 
 let outputBuffer = "";
-function appendOutput(text: string) {
+export function appendOutput(text: string) {
   outputBuffer += text;
 }
 

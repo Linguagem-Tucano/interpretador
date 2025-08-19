@@ -5,8 +5,16 @@ export interface Token {
 }
 
 export enum TokenType {
-    BinaryOperator,
-    UnaryOperator,
+    Mais,
+    Menos,
+    Multiplicacao,
+    Divisao,
+    Modulo,
+    DivisaoInteira,
+    Exponenciacao,
+    Concatenacao,
+
+    Nao,
 
     ComparatorOperator,
 
@@ -50,13 +58,6 @@ export enum TokenType {
     Ate,
     Funcao,
     Retorna,
-    Escreva,
-    Escreval,
-    Leia,
-    Desenhar,
-    Limpar,
-    Imprima,
-    Reta,
     Classe,
     Construtor,
     Privado,
@@ -88,15 +89,6 @@ const reservedWordsObj = {
     "função": TokenType.Funcao,
     "retorna": TokenType.Retorna,
 
-    "escreva": TokenType.Escreva,
-    "escreval": TokenType.Escreval,
-    "leia": TokenType.Leia,
-
-    "desenhe": TokenType.Desenhar,
-    "reta": TokenType.Reta,
-    "limpe": TokenType.Limpar,
-    "imprima": TokenType.Imprima,
-
     "classe": TokenType.Classe,
     "construtor": TokenType.Construtor,
     "privado": TokenType.Privado,
@@ -110,16 +102,18 @@ const reservedWordsObj = {
 export const reservedWords = new Map<string, TokenType>(Object.entries(reservedWordsObj));
 
 
-const binaryOperators = [
-    "+",
-    "-",
-    "*",
-    "/",
-    "%",
-    "//",
-    "^",
-    "..",
-];
+const binOps = {
+    "+":TokenType.Mais,
+    "-":TokenType.Menos,
+    "*":TokenType.Multiplicacao,
+    "/":TokenType.Divisao,
+    "%":TokenType.Modulo,
+    "//":TokenType.DivisaoInteira,
+    "^":TokenType.Exponenciacao,
+    "..":TokenType.Concatenacao,
+};
+
+const binaryOperators = new Map<string, TokenType>(Object.entries(binOps));
 
 const comparatorOperators = [
     "==",
@@ -148,8 +142,13 @@ const openAndClose: {[id:string]:TokenType} = {
     ",":TokenType.Virgula,
 }
 
-function isBinaryOperator(str:string) {
-    return binaryOperators.includes(str);
+const unaryOperators: {[id:string]:TokenType} = {
+    "nao": TokenType.Nao,
+    "-": TokenType.Menos,
+}
+
+function isBinaryOperator(str:string):TokenType | undefined {
+    return binaryOperators.get(str);
 }
 
 function isEndOfLine(str:string) {
@@ -218,26 +217,29 @@ export function tokenize(sourceCode: string): Token[] {
 
     //run til end of source code
     while (src.length>0) {
+        
         let testStr = src[0];
         if (testStr=="/") {
             testStr+=src[1];
             
+            const binOp = isBinaryOperator(src[0]);
             if (isBinaryOperator(testStr)) {
-                tokens.push(token(testStr,TokenType.BinaryOperator, lineNumber));
+                tokens.push(token(testStr,TokenType.DivisaoInteira, lineNumber));
                 for (let i=0; i<testStr.length; i++) {
                     src.shift();
                 }
                 continue;
-            } else if (isBinaryOperator(src[0])) {
-                tokens.push(token(src[0],TokenType.BinaryOperator, lineNumber));
+            } else if (binOp) {
+                tokens.push(token(src[0],binOp, lineNumber));
                 src.shift();
                 continue;
             }
         }
         if (isPonto(testStr)) {
             testStr+=src[1];
+            
             if (isBinaryOperator(testStr)) {
-                tokens.push(token(testStr,TokenType.BinaryOperator, lineNumber));
+                tokens.push(token(testStr,TokenType.Concatenacao, lineNumber));
                 src.shift();
                 src.shift();
                 continue;
@@ -262,8 +264,16 @@ export function tokenize(sourceCode: string): Token[] {
             }
         }
 
-        if (isBinaryOperator(src[0])) {
-            tokens.push(token(src[0],TokenType.BinaryOperator,lineNumber));
+        const binOp = isBinaryOperator(testStr);
+        if (binOp!=undefined) {
+            tokens.push(token(src[0],binOp,lineNumber));
+            src.shift();
+            continue;
+        }
+
+        const unOp = unaryOperators[src[0]];
+        if (unOp) {
+            tokens.push(token(src[0],unOp,lineNumber));
             src.shift();
             continue;
         }
@@ -353,6 +363,7 @@ export function tokenize(sourceCode: string): Token[] {
     }
 
     tokens.push(token("EOF",TokenType.EOF,lineNumber));
+    
     return tokens;
 }
 

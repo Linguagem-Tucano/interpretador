@@ -1,19 +1,12 @@
 import { Class, FuncDecl } from "./ast.ts";
-import { BooleanVal, MK_NULL, RuntimeVal, ValueType } from "./values.ts";
+import { RuntimeVal, ValueType } from "./values.ts";
 import { Function } from "./function.ts";
 import { reportError } from "./main.ts";
+import { setupEnv } from "./globals.ts";
 
 function setupScope(env: Environment) {
-    env.declareVar("verdadeiro",{type:"BooleanVal",value:true} as BooleanVal,"BooleanVal");
-    env.declareVar("falso",{type:"BooleanVal",value:false} as BooleanVal,"BooleanVal");
-    env.declareVar("nulo",MK_NULL(),"NullVal");
-    const nowClock = Date.now();
-    const clockFn = new Function([],[]);
-    clockFn.call = function(_env: Environment) {
-        const ms = Date.now() - nowClock;
-        return {type:"RealVal",value:ms/1000} as RuntimeVal;
-    }
-    env.functions.set("relogio",clockFn);
+    console.log("Inicializando ambiente global");
+    setupEnv(env);
 }
 
 export default class Environment {

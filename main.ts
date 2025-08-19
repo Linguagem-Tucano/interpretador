@@ -86,44 +86,44 @@ export function reportError(errorMessage:string, line:number) {
     //throw msg;
 }
 
-export function drawLine(x1:number,y1:number,x2:number,y2:number,line:number) {
+export function drawLine(x1:number,y1:number,x2:number,y2:number) {
     if (ctx!=undefined) {
         ctx.beginPath();
         ctx.moveTo(x1,y1);
         ctx.lineTo(x2,y2);
         ctx.stroke();
     } else {
-        throw reportError("Ambiente não suporta gráficos",line)
+        throw "Ambiente não suporta gráficos";
     }
 }
 
-export function drawImage(x:number,y:number,w:number,h:number,img:string,line:number) {
+export function drawImage(x:number,y:number,w:number,h:number,img:string) {
     if (ctx!=undefined) {
         const image = document.getElementById(img);
         if (image) {
             ctx.drawImage(image, x, y, w, h);
         } else {
-            throw reportError("Objeto "+img+" não encontrado",line);
+            throw "Objeto "+img+" não encontrado";
         }
     } else {
-        throw reportError("Ambiente não suporta gráficos",line)
+        throw "Ambiente não suporta gráficos"
     }
 }
 
-export function clearCanvas(line:number) {
+export function clearCanvas() {
     if (ctx!=undefined) {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     } else {
-        throw reportError("Ambiente não suporta gráficos",line)
+        throw "Ambiente não suporta gráficos";
     }
 }
 
-export function drawText(x:number,y:number,text:string,size:number,line:number) {
+export function drawText(x:number,y:number,text:string,size:number) {
     if (ctx!=undefined) {
         ctx.font = size+"px Arial";
         ctx.fillText(text,x,y);
     } else {
-        throw reportError("Ambiente não suporta gráficos",line)
+        throw "Ambiente não suporta gráficos";
     }
 }
 

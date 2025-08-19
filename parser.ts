@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-case-declarations
-import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, OutputStmt, InputStmt, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup, RetaExpr, DesenharExpr, LimparExpr, ConvertExpr, ImprimaExpr} from "./ast.ts";
+import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup, ConvertExpr, UnaryExpr} from "./ast.ts";
 import { tokenize, Token, TokenType} from "./lexer.ts";
 import { ValueType } from "./values.ts";
 import { reportError } from "./main.ts";
@@ -69,12 +69,6 @@ export default class Parser {
                 return this.parseFuncDecl();
             case TokenType.Retorna:
                 return this.parseReturnExpr();
-            case TokenType.Escreva:
-                return this.parseOutputStmt();
-            case TokenType.Escreval:
-                return this.parseOutputStmt();
-            case TokenType.Leia:
-                return this.parseInputStmt();
             case TokenType.Para:
                 return this.parseForStmt();
             case TokenType.Enquanto:
@@ -87,76 +81,10 @@ export default class Parser {
                 return this.parseConstructor();
             case TokenType.Novo:
                 return this.parseNewObjectExpr();
-            case TokenType.Reta:
-                return this.parseRetaExpr();
-            case TokenType.Desenhar:
-                return this.parseDesenharExpr();
-            case TokenType.Limpar:
-                return this.parseLimparExpr();
-            case TokenType.Imprima:
-                return this.parseImprimaExpr();
             default:
                 return this.parseExpr();
         }
         
-    }
-
-    private parseImprimaExpr(): Stmt {
-        this.advance() //go past imprima
-        this.eatOnly(TokenType.LParen, "Esperava um '('");
-        const x = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
-        const y = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
-        const value = this.parseExpr();
-        this.eatOnly(TokenType.RParen, "Esperava um ')'");
-
-        const ret = {kind:"ImprimaExpr", x, y, value, line:this.at().line} as ImprimaExpr;
-        return ret;
-    }
-
-    private parseLimparExpr(): Stmt {
-        this.advance() //go past limpar
-        this.eatOnly(TokenType.LParen, "Esperava um '('");
-        
-        this.eatOnly(TokenType.RParen, "Esperava um ')'");
-
-        const ret = {kind:"LimparExpr",line:this.at().line} as LimparExpr;
-        return ret;
-    }
-
-    private parseDesenharExpr(): Stmt {
-        this.advance() //go past desnehar
-        this.eatOnly(TokenType.LParen, "Esperava um '('");
-        const x = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
-        const y = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
-        const w = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
-        const h = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
-        const img = this.parseExpr();
-        this.eatOnly(TokenType.RParen, "Esperava um ')'");
-
-        const ret = {kind:"DesenharExpr", x, y, w, h, img, line:this.at().line} as DesenharExpr;
-        return ret;
-    }
-
-    private parseRetaExpr(): Stmt {
-        this.advance() // engole o reta
-        this.eatOnly(TokenType.LParen, "Esperava um '('");
-        const x1 = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
-        const y1 = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
-        const x2 = this.parseExpr();
-        this.eatOnly(TokenType.Virgula, "Esperava uma ','");
-        const y2 = this.parseExpr();
-        this.eatOnly(TokenType.RParen, "Esperava um ')'")
-        
-        const ret = {kind:"RetaExpr",x1,y1,x2,y2,line:this.at().line} as RetaExpr;
-        return ret;
     }
 
     private parseNewObjectExpr(): Stmt {
@@ -390,38 +318,6 @@ export default class Parser {
         return {kind:"ForStmt",variable,startIndex,endIndex,body,step,line} as ForStmt;
     }
 
-    private parseOutputStmt(): Expr {
-        let final = "";
-        if (this.at().type==TokenType.Escreval) {final="\n";}
-        this.advance(); //go past escreva
-        this.eatOnly(TokenType.LParen,"Esperava um '('.");
-        let value;
-        while (this.at().type!=TokenType.RParen && this.at().type!=TokenType.EOF) {
-            value = this.parseStmt();
-        }
-        this.eatOnly(TokenType.RParen,"Esperava um ')'.");
-        return {kind:"OutputStmt", value, final,line: this.at().line} as OutputStmt;
-    }
-
-    private parseInputStmt(): Expr {
-        if (this.at().type==TokenType.Leia) {
-            this.advance(); //go past leia
-            this.eatOnly(TokenType.LParen,"Esperava um '('.");
-            let text = null;
-            let varname = "";
-            if (this.at().type!=TokenType.RParen) {
-                text = this.parseExpr();
-                if (this.at().type==TokenType.Virgula) {
-                    this.advance(); //go past ,
-                    varname = this.eatOnly(TokenType.Identifier,"Esperava o nome da variável").value;
-                }
-            }
-            this.eatOnly(TokenType.RParen,"Esperava um ')'.");
-            return {kind:"InputStmt", text, varname,line: this.at().line} as InputStmt;
-        }
-        return this.parseFuncCall();
-    }
-
     private parseFuncDecl(): Stmt {
         //funcao nome(args:tipo,args:tipo):tipo {}
         this.advance(); //go past funcao
@@ -629,10 +525,10 @@ export default class Parser {
     }
 
     private parseConcatenateExpr(): Expr {
-        let left = this.parseInputStmt();
+        let left = this.parseFuncCall();
         while (this.at().value=="..") {
             const operator = this.advance().value;
-            const right = this.parseStmt();
+            const right = this.parseFuncCall();
             left = {kind:"BinaryExpr",left,right,operator,line: this.at().line} as BinaryExpr;
         }
         return left; 
@@ -651,7 +547,7 @@ export default class Parser {
                 const args = [] as Expr[];
                 while(this.at().type!=TokenType.RParen && this.at().type!=TokenType.EOF) {
                     if (this.at().type!=TokenType.Virgula) {
-                        const s = this.parseStmt();
+                        const s = this.parseComparatorExpr();
                         args.push(s);
                     } else {
                         this.advance();
@@ -780,11 +676,11 @@ export default class Parser {
         return expr;
     }
 
-        private parseConvertExpr(): Stmt {
+    private parseConvertExpr(): Stmt {
         
         // converter(expr para tipo)
         if (this.at().type!=TokenType.Converter) {
-            return this.parsePrimaryExpr();
+            return this.parseUnaryExpr();
         }
 
         this.advance(); //go past converter
@@ -816,6 +712,24 @@ export default class Parser {
         return {kind:"ConvertExpr", value, type, line:this.at().line} as ConvertExpr;
     }
 
+
+    private parseUnaryExpr(): Expr {
+        const tk = this.at().type;
+
+        switch (tk) {
+            case TokenType.Nao:
+                this.advance();
+                const value = this.parseUnaryExpr();
+                return {kind:"UnaryExpr",operator:"nao",value,line:this.at().line} as UnaryExpr;
+            case TokenType.Menos:
+                this.advance();
+                const negValue = this.parseUnaryExpr();
+                return {kind:"UnaryExpr",operator:"-",value:negValue,line:this.at().line} as UnaryExpr;
+            default:
+                return this.parsePrimaryExpr();
+        }
+
+    }
 
 
     private parsePrimaryExpr(): Expr {
