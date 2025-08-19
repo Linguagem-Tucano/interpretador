@@ -60,6 +60,18 @@ export function setupEnv(env: Environment) {
     }
     env.functions.set("leia", leia);
 
+    const leiaNum = new Function([],[arg]);
+    leia.call = function(_env: Environment) {
+        const text = _env.lookupVar("text");
+        const input = prompt(text.value as string);
+        const res = Number.parseFloat(input as string);
+        if (Number.isNaN(res)) {
+            throw `Valor ${input} não é um número válido`;
+        }
+        return {type:"RealVal",value:res} as RuntimeVal;
+    }
+    env.functions.set("leianum", leia);
+
 
 
     const telaEnv = new Environment({} as Environment);
