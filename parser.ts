@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-case-declarations
 import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup, ConvertExpr, UnaryExpr} from "./ast.ts";
-import { tokenize, Token, TokenType} from "./lexer.ts";
+import { tokenize, Token, TokenType, lexerError} from "./lexer.ts";
 import { ValueType } from "./values.ts";
 import { reportError } from "./main.ts";
 
@@ -32,7 +32,13 @@ export default class Parser {
     }
 
     public produceAST(sourceCode:string):Program {
-        this.tokens = tokenize(sourceCode);
+        try {
+
+            this.tokens = tokenize(sourceCode);
+        } catch (e) {
+            const err = e as lexerError;
+            reportError(err.text,err.line)
+        }
         const program:Program = {
             kind:"Program",
             body:[],

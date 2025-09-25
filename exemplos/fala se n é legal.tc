@@ -1,0 +1,25 @@
+var tucano = novo ObjetoDesenhavel(0,0,250,250,"hid")
+tucano.desenhar()
+
+funcao teclapressionada(tecla) {
+	se (tecla == "a") {
+		tucano.x = tucano.x-10
+	}
+	se (tecla == "d") {
+		tucano.x = tucano.x+10
+	}
+	se (tecla == "w") {
+		tucano.y = tucano.y-10
+	}
+	se (tecla == "s") {
+		tucano.y = tucano.y+10
+	}
+}
+
+funcao atualizar(dt) {
+	escreval("CANVASCOMMAND::clear")
+	tucano.desenhar()
+	se (tucano.y<150) {
+		tucano.y=tucano.y+5
+	}
+}

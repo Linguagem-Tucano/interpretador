@@ -340,6 +340,7 @@ export function tokenize(sourceCode: string): Token[] {
                 text+=src[0];
                 src.shift();
             }
+            if (src.length==0) {throw {text:"Aspas não fechadas",line:lineNumber} as lexerError}
             src.shift(); //eat the last "
             tokens.push(token(text,TokenType.StringLiteral,lineNumber));
             continue;
@@ -369,4 +370,9 @@ export function tokenize(sourceCode: string): Token[] {
 
 function match(str: string): boolean {
     return current() == str;
+}
+
+export interface lexerError {
+    text:string,
+    line:number
 }

@@ -9,9 +9,10 @@ export class Function {
     public args: ArgumentExpr[];
     public type: ValueType = "NullVal";
 
-    constructor(body: Stmt[], args: ArgumentExpr[]) {
+    constructor(body: Stmt[], args: ArgumentExpr[], type?:ValueType) {
         this.body = body;
         this.args = args;
+        this.type = type? type : "NullVal";
     }
 
     public call(env: Environment) {

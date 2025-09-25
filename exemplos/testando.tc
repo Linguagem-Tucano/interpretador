@@ -1,0 +1,12 @@
+funcao loop(x, texto) {
+	se (x>0) {
+		escreva(texto)
+		escreva(" numero ")
+		escreval(6-x)
+		retorna loop(x-1,texto)
+	} senao {
+		retorna
+	}
+}
+
+loop(5,leia())

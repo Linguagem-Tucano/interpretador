@@ -1,0 +1,18 @@
+-- Usando o enquanto
+int i = 0
+caractere[] listaFrutas = ["Banana", "Maçã", "Pera", "Ameixa"]
+escreval("Enquanto")
+enquanto (i<4) {
+  escreval(listaFrutas[i])
+  i = i + 1
+}
+-- Usando o para
+escreval("Para")
+para (i=0,3) faca {
+  escreval(listaFrutas[i])
+}
+-- Usando o para cada
+escreval("Para cada")
+para (fruta de listaFrutas) faca {
+  escreval(fruta)
+}

@@ -65,6 +65,16 @@ export default class Environment {
         return this.parent.resolveFunc(funcname);
     }
 
+    public hasFunc(funcname:string): boolean {
+        if (this.functions.has(funcname)) {
+            return true;
+        }
+        if (this.parent==undefined) {
+            throw `Função ${funcname} não existe`;
+        }
+        return this.parent.hasFunc(funcname);
+    }
+
     public lookupFunc(funcname:string): Function {
         const env = this.resolveFunc(funcname);
         return env.functions.get(funcname) as Function;
@@ -80,24 +90,19 @@ export default class Environment {
         return this.parent.hasVar(varname);
     }
 
-    public hasFunc(funcname:string): boolean {
-        if (this.functions.has(funcname)) {
-            return true
-        }
-        if (this.parent==undefined) {
-            return false
-        }
-        return this.parent.hasFunc(funcname);
-    }
-
 
     public declareFunc(func:FuncDecl) {
         const identifier = func.identifier;
         if (this.functions.has(identifier)) {throw reportError("Função "+identifier+" já declarada",func.line);}
-        const functionBody = func.body;
+        
         const args = func.args;
-        const fun = new Function(functionBody,args);
+        const type = func.type;
+        const functionBody = func.body;
+        
+        const fun = new Function(functionBody,args,type);
+
         this.functions.set(identifier,fun);
+
         return func
     }
 

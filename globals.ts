@@ -43,22 +43,36 @@ export function setupEnv(env: Environment) {
         appendOutput(text.value as string);
         return MK_NULL();
     }
-    env.functions.set("escreva", escreva);
+    
+    
     const escreval = new Function([],[arg]);
     escreval.call = function(_env: Environment) {
         const text = _env.lookupVar("text");
         appendOutput(text.value as string + "\n");
         return MK_NULL();
     }
-    env.functions.set("escreval", escreval);
     
-    const leia = new Function([],[arg]);
+    const novalinha = new Function([],[]);
+    novalinha.call = function(_env: Environment) {
+        appendOutput("\n");
+        return MK_NULL();
+    }
+    
+    
+
+    const leia = new Function([],[]);
     leia.call = function(_env: Environment) {
+        const input = prompt("");
+        return {type:"StringVal",value:input} as RuntimeVal;
+    }
+    
+    const pergunte = new Function([],[arg]);
+    pergunte.call = function(_env: Environment) {
         const text = _env.lookupVar("text");
         const input = prompt(text.value as string);
         return {type:"StringVal",value:input} as RuntimeVal;
     }
-    env.functions.set("leia", leia);
+
 
     const leiaNum = new Function([],[arg]);
     leiaNum.call = function(_env: Environment) {
@@ -70,7 +84,22 @@ export function setupEnv(env: Environment) {
         }
         return {type:"RealVal",value:res} as RuntimeVal;
     }
-    env.functions.set("leianum", leiaNum);
+    
+
+
+    const entradaEnv = new Environment({} as Environment);
+    entradaEnv.functions.set("leia", leia);
+    entradaEnv.functions.set("leianum", leiaNum);
+    entradaEnv.functions.set("pergunte", pergunte);
+
+    env.declareVar("Entrada", {value:"Entrada", className:"Entrada", env:entradaEnv} as ObjectVal, "ObjectVal");
+
+    const saidaEnv = new Environment({} as Environment);
+    saidaEnv.functions.set("escreva", escreva);
+    saidaEnv.functions.set("escreval", escreval);
+    saidaEnv.functions.set("novalinha", novalinha);
+
+    env.declareVar("Saida", {value:"Saida", className:"Saida", env:saidaEnv} as ObjectVal, "ObjectVal");
 
 
 
@@ -128,5 +157,5 @@ export function setupEnv(env: Environment) {
 
     const tela = {value:"Tela", className:"Tela", env:telaEnv} as ObjectVal;
 
-    env.declareVar("tela",tela,"ObjectVal");
+    env.declareVar("Tela",tela,"ObjectVal");
 }

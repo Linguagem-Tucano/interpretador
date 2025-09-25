@@ -1,0 +1,9 @@
+funcao test(abc,max) {
+	para (i=0,max) faca {
+		escreval("Item n"..i..": "..abc[i])
+	}
+}
+
+caractere[] eita = ["abacaxi","melancia","melao"];
+
+test(eita,2)

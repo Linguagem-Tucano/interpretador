@@ -1,0 +1,30 @@
+funcao add(a:int,b:int):int {
+	retorna a+b
+}
+
+funcao addreal(a:real,b:real):real {
+	retorna a+b
+}
+
+int x = add(add(3,3),3)
+escreva("valor de x é ")
+escreval(x)
+
+real y = addreal(1.5,2.2)
+escreva("valor de y é ")
+escreval(y)
+
+escreva("digite seu nome: ")
+caractere nome = leia()
+se (nome=="leonna") {
+	escreval("eba você é foda")
+} senao {
+	escreval("aff vc é paia")
+}
+
+
+
+
+
+
+tucano.mover(10,0)
