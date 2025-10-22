@@ -663,6 +663,10 @@ export function appendOutput(text: string) {
   outputBuffer += text;
 }
 
+export function clearOutputBuffer() {
+    outputBuffer = "";
+}
+
 function evaluateProgram(program: Program, env: Environment):RuntimeVal {
     outputBuffer = "";
     //console.log(program.body);

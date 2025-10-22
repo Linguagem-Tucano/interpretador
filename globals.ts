@@ -3,7 +3,7 @@ import { BooleanVal, MK_NULL, ObjectVal, RuntimeVal } from "./values.ts";
 import { Function } from "./function.ts";
 import { ArgumentExpr } from "./ast.ts";
 import { clearCanvas, drawImage, drawLine, drawText } from "./main.ts";
-import { appendOutput } from "./interpreter.ts";
+import { appendOutput, clearOutputBuffer } from "./interpreter.ts";
 
 export function setupEnv(env: Environment) {
     env.declareVar("verdadeiro",{type:"BooleanVal",value:true} as BooleanVal,"BooleanVal");
@@ -61,6 +61,7 @@ export function setupEnv(env: Environment) {
     const limparterm = new Function([],[]);
     limparterm.call = function(_env: Environment) {
         console.clear();
+        clearOutputBuffer();
         return MK_NULL();
     }
     
