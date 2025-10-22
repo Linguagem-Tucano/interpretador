@@ -57,6 +57,12 @@ export function setupEnv(env: Environment) {
         appendOutput("\n");
         return MK_NULL();
     }
+
+    const limparterm = new Function([],[]);
+    limparterm.call = function(_env: Environment) {
+        console.clear();
+        return MK_NULL();
+    }
     
     
 
@@ -98,6 +104,7 @@ export function setupEnv(env: Environment) {
     saidaEnv.functions.set("escreva", escreva);
     saidaEnv.functions.set("escreval", escreval);
     saidaEnv.functions.set("novalinha", novalinha);
+    saidaEnv.functions.set("limpar", limparterm);
 
     env.declareVar("Saida", {value:"Saida", className:"Saida", env:saidaEnv} as ObjectVal, "ObjectVal");
 
