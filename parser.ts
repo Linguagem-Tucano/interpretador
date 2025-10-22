@@ -777,7 +777,7 @@ export default class Parser {
             //case TokenType.RChave:
             //    return {kind:"EndScope",line:this.at().line} as EndScope;
             default:
-                throw reportError("Token inesperado: "+this.at().value, this.at().line);
+                throw reportError("Token inesperado: '"+this.at().value+"'", this.at().line);
         }
     }
 }

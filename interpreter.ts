@@ -368,7 +368,7 @@ function evaluateComparison(node: ComparatorExpr, env:Environment): RuntimeVal {
             case ">=":
                 left = (evaluate(node.left,env));
                 right = (evaluate(node.right,env));
-                if ((left.type=="RealVal" && right.type=="RealVal") || (left.type=="NumberVal" && right.type=="NumberVal")) {
+                if ((right.type=="NumberVal" || right.type=="RealVal") && (left.type=="NumberVal" || left.type=="RealVal")) {
                     result.value = (left.value>=right.value);
                     break;
                 } else {
@@ -377,7 +377,7 @@ function evaluateComparison(node: ComparatorExpr, env:Environment): RuntimeVal {
             case "<=":
                 left = (evaluate(node.left,env));
                 right = (evaluate(node.right,env));
-                if ((left.type=="RealVal" && right.type=="RealVal") || (left.type=="NumberVal" && right.type=="NumberVal")) {
+                if ((right.type=="NumberVal" || right.type=="RealVal") && (left.type=="NumberVal" || left.type=="RealVal")) {
                     result.value = (left.value<=right.value);
                     break;
                 } else {
@@ -386,7 +386,7 @@ function evaluateComparison(node: ComparatorExpr, env:Environment): RuntimeVal {
             case ">":
                 left = (evaluate(node.left,env));
                 right = (evaluate(node.right,env));
-                if ((left.type=="RealVal" && right.type=="RealVal") || (left.type=="NumberVal" && right.type=="NumberVal")) {
+                if ((right.type=="NumberVal" || right.type=="RealVal") && (left.type=="NumberVal" || left.type=="RealVal")) {
                     result.value = (left.value>right.value);
                     break;
                 } else {
@@ -396,7 +396,7 @@ function evaluateComparison(node: ComparatorExpr, env:Environment): RuntimeVal {
                 
                 left = (evaluate(node.left,env));
                 right = (evaluate(node.right,env));
-                if ((left.type=="RealVal" && right.type=="RealVal") || (left.type=="NumberVal" && right.type=="NumberVal")) {
+                if ((right.type=="NumberVal" || right.type=="RealVal") && (left.type=="NumberVal" || left.type=="RealVal")) {
                     result.value = (left.value<right.value);
                     break;
                 } else {
@@ -410,7 +410,7 @@ function evaluateComparison(node: ComparatorExpr, env:Environment): RuntimeVal {
         }
         return result;
     } catch {
-        throw reportError("Tentou avaliar dois tipos incompativeis: "+evaluate(node.left,env).type+" e "+evaluate(node.right,env).type, node.line);
+        throw "";
     }
 }
 
