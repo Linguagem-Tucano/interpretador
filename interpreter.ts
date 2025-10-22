@@ -3,6 +3,7 @@ import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanV
 import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, ConvertExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UnaryExpr, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
 import Environment from "./environment.ts";
 import { reportError } from "./main.ts";
+import { Function } from "./function.ts";
 
 
 export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
@@ -537,7 +538,12 @@ function evaluateFuncCall(node: FuncCall, env:Environment, argsEnv?: Environment
 
     const identifier = node.identifier
     //call function
-    const func = env.lookupFunc(identifier);
+    let func: Function;
+    try {
+        func = env.lookupFunc(identifier);
+    } catch (error) {
+        throw reportError(error as string, node.line);
+    }
     //get the arguments
     const args = func.args ? func.args : [] as ArgumentExpr[];
     const passedArgs = node.args;
