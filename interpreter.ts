@@ -70,11 +70,14 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
 function evaluateUnaryExpr(node: UnaryExpr, env: Environment): RuntimeVal {
     switch (node.operator) {
         case "nao":
-            return MK_NULL();
+            const nope = evaluate(node.value,env) as RuntimeVal;
+            if (nope.type!="BooleanVal") throw reportError("Tentou negar um valor não booleano", node.line);
+            nope.value = !nope.value;
+            return nope;
         case "-":
             const val = evaluate(node.value, env);
             if (val.type!="NumberVal" && val.type!="RealVal") {
-                throw reportError("Tentou negar um valor não numérico",node.line);
+                throw reportError("Tentou negativar um valor não numérico",node.line);
             }
             val.value = (-1) * val.value;
             return val;

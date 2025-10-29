@@ -143,7 +143,7 @@ const openAndClose: {[id:string]:TokenType} = {
 }
 
 const unaryOperators: {[id:string]:TokenType} = {
-    "nao": TokenType.Nao,
+    "~": TokenType.Nao,
     "-": TokenType.Menos,
 }
 
@@ -271,12 +271,6 @@ export function tokenize(sourceCode: string): Token[] {
             continue;
         }
 
-        const unOp = unaryOperators[src[0]];
-        if (unOp) {
-            tokens.push(token(src[0],unOp,lineNumber));
-            src.shift();
-            continue;
-        }
         if (isOpeningOrClosing(src[0])) {
             tokens.push(token(src[0],openAndClose[src[0]],lineNumber));
             src.shift();
@@ -298,6 +292,13 @@ export function tokenize(sourceCode: string): Token[] {
         }
         if (isComparator(src[0])) {
             tokens.push(token(src[0],TokenType.ComparatorOperator,lineNumber));
+            src.shift();
+            continue;
+        }
+
+        const unOp = unaryOperators[src[0]];
+        if (unOp) {
+            tokens.push(token(src[0],unOp,lineNumber));
             src.shift();
             continue;
         }
@@ -364,7 +365,7 @@ export function tokenize(sourceCode: string): Token[] {
     }
 
     tokens.push(token("EOF",TokenType.EOF,lineNumber));
-    
+    //console.log(tokens);
     return tokens;
 }
 
