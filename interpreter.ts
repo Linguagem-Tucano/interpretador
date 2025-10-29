@@ -224,8 +224,17 @@ function evaluateUntilStmt(node: UntilStmt, env:Environment):RuntimeVal {
 function evaluateListIdentifier(node: ListIdentifier, env:Environment): RuntimeVal {
     const symbol = node.symbol;
     if (env.hasVar(symbol)) {
-        const list = lookupVar(node,symbol,env) as ListVal;
-        const lookup = evaluate(node.lookup,env) as NumberVal;
+        let list = lookupVar(node,symbol,env) as ListVal;
+        let i = node.lookup.length-1;
+        let curr = 0;
+        while (i>0) {
+            i--;
+            const smallLookup = evaluate(node.lookup[curr],env) as NumberVal;
+            if (list.listType!=="ListVal") throw reportError("Tentou buscar um índice em uma variável que não é lista",node.line);
+            list = list.value[smallLookup.value] as ListVal;
+            curr++;
+        }
+        const lookup = evaluate(node.lookup[curr],env) as NumberVal;
         return list.value[lookup.value];
     } else {
         throw reportError("Lista não existe", node.line);
@@ -492,6 +501,7 @@ function evaluateVarAssignment(node:AssignmentExpr,env:Environment):RuntimeVal {
     }
 
     if (assigneetype==vartype || vartype=="NullVal") {
+        console.log("TIPO VARIAVEL:::",vartype)
         return env.assignVar(varname.symbol,valueside);
     } else {throw reportError("Tipo de variavel errado. Esperava: "+vartype+" e recebi: "+assigneetype,node.line)}
 }

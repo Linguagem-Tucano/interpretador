@@ -226,7 +226,7 @@ export interface ListLiteral extends Expr {
 export interface ListIdentifier extends Expr {
     kind:"ListIdentifier";
     symbol:string;
-    lookup:Stmt;
+    lookup:Stmt[];
 }
 
 export interface EndOfLine extends Expr {

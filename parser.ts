@@ -488,7 +488,7 @@ export default class Parser {
         let varType = this.advance().value;
         
         //check if list
-        if (this.at().type == TokenType.LColch) {
+        while (this.at().type == TokenType.LColch) {
             this.advance();
             this.eatOnly(TokenType.RColch, "Esperava um ]");
             varType += "[]";
@@ -496,7 +496,7 @@ export default class Parser {
 
         
 
-        const identifier = this.eatOnly(TokenType.Identifier,"Esperava um nome de variável.")?.value;
+        const identifier = this.eatOnly(TokenType.Identifier,"Esperava um nome de variável")?.value;
         
         if (this.at().type==TokenType.EOL || this.at().type==TokenType.EOF) {
             return { kind:"VarDecl", identifier,line: this.at().line} as VarDecl;
@@ -509,26 +509,10 @@ export default class Parser {
     }
 
     private parseExpr(): Expr {
-        return this.parseListExpr();
-    }
-
-    private parseListExpr(): Expr {
-        if (this.at().type == TokenType.LColch) {
-            this.advance();
-            const list = [] as Expr[];
-            while (this.at().type!=TokenType.RColch && this.at().type!=TokenType.EOF) {
-                if (this.at().type!=TokenType.Virgula) {
-                    const s = this.parseStmt();
-                    list.push(s);
-                } else {
-                    this.advance();
-                }
-            }
-            this.advance();
-            return {kind:"ListLiteral",values:list,line: this.at().line} as ListLiteral;
-        }
         return this.parseConcatenateExpr();
     }
+
+    
 
     private parseConcatenateExpr(): Expr {
         let left = this.parseFuncCall();
@@ -732,11 +716,28 @@ export default class Parser {
                 const negValue = this.parseUnaryExpr();
                 return {kind:"UnaryExpr",operator:"-",value:negValue,line:this.at().line} as UnaryExpr;
             default:
-                return this.parsePrimaryExpr();
+                return this.parseListExpr();
         }
 
     }
 
+    private parseListExpr(): Expr {
+        if (this.at().type == TokenType.LColch) {
+            this.advance();
+            const list = [] as Expr[];
+            while (this.at().type!=TokenType.RColch && this.at().type!=TokenType.EOF) {
+                if (this.at().type!=TokenType.Virgula) {
+                    const s = this.parseStmt();
+                    list.push(s);
+                } else {
+                    this.advance();
+                }
+            }
+            this.advance();
+            return {kind:"ListLiteral",values:list,line: this.at().line} as ListLiteral;
+        }
+        return this.parsePrimaryExpr();
+    }
 
     private parsePrimaryExpr(): Expr {
         const tk = this.at().type;
@@ -744,13 +745,14 @@ export default class Parser {
         switch (tk) {
             case TokenType.Identifier:
                 const id = this.advance().value;
-                if (this.at().type==TokenType.LColch) {
+                const lookup = [];
+                while (this.at().type==TokenType.LColch) {
                     this.advance();
 
-                    const lookup = this.parseStmt();
+                    lookup.push(this.parseStmt());
                     this.eatOnly(TokenType.RColch, "Esperava um ]");
-                    return {kind:"ListIdentifier",symbol:id,lookup:lookup,line:this.at().line} as ListIdentifier;
                 }
+                if (lookup.length>0) return {kind:"ListIdentifier",symbol:id,lookup:lookup,line:this.at().line} as ListIdentifier;
                 return {kind:"Identifier", symbol:id,line:this.at().line} as Identifier;
             case TokenType.Ponto:
                 return {kind:"Dot",line:this.at().line} as Dot;
