@@ -40,7 +40,11 @@ export function setupEnv(env: Environment) {
     const escreva = new Function([],[arg]);
     escreva.call = function(_env: Environment) {
         const text = _env.lookupVar("text");
-        appendOutput(text.value as string);
+        let v = text.value;
+        if (text.type == "BooleanVal") {
+            v = text.value ? "verdadeiro" : "falso"
+        }
+        appendOutput(v as string);
         return MK_NULL();
     }
     
@@ -48,7 +52,11 @@ export function setupEnv(env: Environment) {
     const escreval = new Function([],[arg]);
     escreval.call = function(_env: Environment) {
         const text = _env.lookupVar("text");
-        appendOutput(text.value as string + "\n");
+        let v = text.value;
+        if (text.type == "BooleanVal") {
+            v = text.value ? "verdadeiro" : "falso"
+        }
+        appendOutput(v as string + "\n");
         return MK_NULL();
     }
     
