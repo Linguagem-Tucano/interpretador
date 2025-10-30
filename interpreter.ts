@@ -504,7 +504,6 @@ function evaluateVarAssignment(node:AssignmentExpr,env:Environment):RuntimeVal {
     }
 
     if (assigneetype==vartype || vartype=="NullVal") {
-        console.log("TIPO VARIAVEL:::",vartype)
         return env.assignVar(varname.symbol,valueside);
     } else {throw reportError("Tipo de variavel errado. Esperava: "+vartype+" e recebi: "+assigneetype,node.line)}
 }

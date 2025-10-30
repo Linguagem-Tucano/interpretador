@@ -3,7 +3,6 @@
 import Parser from "./parser.ts";
 import { evaluate} from "./interpreter.ts";
 import Environment from "./environment.ts";
-import { StringVal } from "./values.ts";
 import { Expr, FuncCall, Program, Stmt, StringLiteral } from "./ast.ts";
 
 
