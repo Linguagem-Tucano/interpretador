@@ -30,7 +30,10 @@ export function repl() {
             
             result = evaluate(program,env);
 
-            console.log((result as StringVal).value);
+            let v = result.value;
+            if (result.type == "BooleanVal") {v = result.value ? "verdadeiro" : "falso"}
+
+            console.log(v);
         } catch (_error) {
             //empty
         }

@@ -163,17 +163,17 @@ function evaluateNewObjectExpr(node: NewObjectExpr, env:Environment): RuntimeVal
     const body = nodeClass.body;
     
     const objectEnv = new Environment(env);
-    objectEnv.declareVar("isso",{type:"ObjectVal", value:"Objeto da classe "+node.class, env:objectEnv} as ObjectVal, "ObjectVal")
+    objectEnv.declareVar("isso",{type:"ObjectVal", value:"Objeto da classe "+node.class, env:objectEnv} as ObjectVal, "ObjectVal");
 
     for (let i = 0; i < body.length; i++) {
         const stmt = body[i];
         evaluate(stmt, objectEnv);
     }
     
-    const args = node.args
-    const identifier = "construtor"
+    const args = node.args;
+    const identifier = "construtor";
 
-    const call = {kind: "FuncCall", args, identifier} as FuncCall
+    const call = {kind: "FuncCall", args, identifier} as FuncCall;
     //console.log(objectEnv);
     return evaluateFuncCall(call, objectEnv);
 }
