@@ -121,6 +121,12 @@ export default class Parser {
         this.advance(); // consume 'classe'
     
         const identifier = this.eatOnly(TokenType.Identifier, "Esperava o nome da classe").value;
+        let parent = undefined;
+        if (this.at().type == TokenType.Extende) {
+            this.advance();
+            parent = this.eatOnly(TokenType.Identifier, "Esperava o nome de uma classe-pai").value;
+        }
+
         this.eatOnly(TokenType.LChave, "Esperava '{' após o nome da classe");
     
         const body = [] as Stmt[];
@@ -136,7 +142,7 @@ export default class Parser {
         this.insideClass = false;
         this.advance(); // consume '}'
         
-        const ret = {kind:"Class", identifier, body,line: this.at().line} as Class;
+        const ret = {kind:"Class", identifier, body,line: this.at().line, parent} as Class;
         return ret;
     }
     
@@ -537,7 +543,7 @@ export default class Parser {
                 const args = [] as Expr[];
                 while(this.at().type!=TokenType.RParen && this.at().type!=TokenType.EOF) {
                     if (this.at().type!=TokenType.Virgula) {
-                        const s = this.parseComparatorExpr();
+                        const s = this.parseStmt();
                         args.push(s);
                     } else {
                         this.advance();

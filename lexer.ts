@@ -65,6 +65,7 @@ export enum TokenType {
     Publico,
     Novo,
     Converter,
+    Extende,
 }
 const reservedWordsObj = {
     "var": TokenType.Var,
@@ -79,6 +80,7 @@ const reservedWordsObj = {
     "para": TokenType.Para,
     "de": TokenType.De,
     "faca": TokenType.Faca,
+    "faça":TokenType.Faca,
 
     "enquanto": TokenType.Enquanto,
     "repita": TokenType.Repita,
@@ -86,6 +88,8 @@ const reservedWordsObj = {
     "até": TokenType.Ate,
 
     "funcao": TokenType.Funcao,
+    "funçao": TokenType.Funcao,
+    "funcão": TokenType.Funcao,
     "função": TokenType.Funcao,
     "retorna": TokenType.Retorna,
 
@@ -97,6 +101,7 @@ const reservedWordsObj = {
     "novo": TokenType.Novo,
 
     "converta": TokenType.Converter,
+    "extende": TokenType.Extende,
 }
 
 export const reservedWords = new Map<string, TokenType>(Object.entries(reservedWordsObj));

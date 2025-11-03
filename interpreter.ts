@@ -160,10 +160,16 @@ function evaluateCallLookup(node: CallLookup, env:Environment): RuntimeVal {
 function evaluateNewObjectExpr(node: NewObjectExpr, env:Environment): RuntimeVal {
     const nodeClass = env.resolveClass(node.class);
     
+    const parent = nodeClass.parent;
     const body = nodeClass.body;
     
-    const objectEnv = new Environment(env);
+    let pEnv = env;
+    
+    const objectEnv = new Environment(pEnv);
+    
     objectEnv.declareVar("isso",{type:"ObjectVal", value:"Objeto da classe "+node.class, env:objectEnv} as ObjectVal, "ObjectVal");
+
+    
 
     for (let i = 0; i < body.length; i++) {
         const stmt = body[i];
@@ -475,7 +481,7 @@ function evaluateVarDecl(variable:VarDecl,env:Environment):RuntimeVal {
         }
     }
 
-    env.declareVar(variable.identifier,value,type as ValueType);
+    GLOBAL_ENV.declareVar(variable.identifier,value,type as ValueType);
     return value;
 }
 
@@ -685,10 +691,22 @@ export function clearOutputBuffer() {
     outputBuffer = "";
 }
 
+export function flushOutputBuffer() {
+    if (outputBuffer.endsWith('\n')) {
+        console.log(outputBuffer.trimEnd());
+        clearOutputBuffer();
+    }
+}
+
+let GLOBAL_ENV = {} as Environment;
+export function setGlobalEnv(env: Environment) {
+    GLOBAL_ENV = env;
+}
+
 function evaluateProgram(program: Program, env: Environment):RuntimeVal {
     outputBuffer = "";
-    //console.log(program.body);
     let lastEvaluated: RuntimeVal = {type:"NullVal",value:"nulo"} as NullVal;
+    GLOBAL_ENV = env;
     for (const statement of program.body) {
         lastEvaluated = evaluate(statement,env);
     }

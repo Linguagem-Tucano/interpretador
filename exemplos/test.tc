@@ -7,24 +7,16 @@ funcao addreal(a:real,b:real):real {
 }
 
 int x = add(add(3,3),3)
-escreva("valor de x é ")
-escreval(x)
+Saida.escreva("valor de x é ")
+Saida.escreval(x)
 
 real y = addreal(1.5,2.2)
-escreva("valor de y é ")
-escreval(y)
+Saida.escreva("valor de y é ")
+Saida.escreval(y)
 
-escreva("digite seu nome: ")
-caractere nome = leia()
+caractere nome = Entrada.pergunte("Digite seu nome: ")
 se (nome=="leonna") {
-	escreval("eba você é foda")
+	Saida.escreval("eba você é foda")
 } senao {
-	escreval("aff vc é paia")
+	Saida.escreval("aff vc é paia")
 }
-
-
-
-
-
-
-tucano.mover(10,0)
