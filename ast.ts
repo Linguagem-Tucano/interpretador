@@ -41,7 +41,7 @@ export type nodeType =
 | "AttributeLookup"
 | "CallLookup"
 
-| "Class"
+| "ClassExpr"
 | "ClassAtribute"
 | "ClassConstructor"
 | "ClassFunction"
@@ -59,8 +59,8 @@ export interface Program extends Stmt {
     body: Stmt[];
 }
 
-export interface Class extends Stmt {
-    kind: "Class";
+export interface ClassExpr extends Stmt {
+    kind: "ClassExpr";
     identifier: string;
     body: Stmt[];
     parent?: string; // Nome da classe pai, se houver
@@ -124,6 +124,7 @@ export interface VarDecl extends Stmt {
     identifier: string;
     type:string;
     value?: Expr;
+    local:boolean;
 }
 
 export interface FuncDecl extends Stmt {

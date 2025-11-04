@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-case-declarations
-import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, Class, AttributeLookup, NewObjectExpr, CallLookup, ConvertExpr, UnaryExpr} from "./ast.ts";
+import { Stmt, Dot, Program, BinaryExpr, Expr, Identifier, IfStmt, NumericLiteral, VarDecl, EndOfLine, AssignmentExpr, StringLiteral, ComparatorExpr, RealLiteral, ArgumentExpr, FuncDecl, FuncCall, ReturnExpr, ForStmt, ListLiteral, ListIdentifier, ForEachStmt, WhileStmt, UntilStmt, ClassExpr, AttributeLookup, NewObjectExpr, CallLookup, ConvertExpr, UnaryExpr} from "./ast.ts";
 import { tokenize, Token, TokenType, lexerError} from "./lexer.ts";
 import { ValueType } from "./values.ts";
 import { reportError } from "./main.ts";
@@ -68,6 +68,8 @@ export default class Parser {
             case TokenType.RealWord:
                 return this.parseVarDecl();
             case TokenType.Logico:
+                return this.parseVarDecl();
+            case TokenType.Local:
                 return this.parseVarDecl();
             case TokenType.Se:
                 return this.parseIfStmt();
@@ -142,7 +144,7 @@ export default class Parser {
         this.insideClass = false;
         this.advance(); // consume '}'
         
-        const ret = {kind:"Class", identifier, body,line: this.at().line, parent} as Class;
+        const ret = {kind:"ClassExpr", identifier, body,line: this.at().line, parent} as ClassExpr;
         return ret;
     }
     
@@ -491,6 +493,8 @@ export default class Parser {
     }
 
     private parseVarDecl(): Stmt {
+        let local = false;
+        if (this.at().type == TokenType.Local) {local=true; this.advance();}
         let varType = this.advance().value;
         
         //check if list
@@ -505,9 +509,9 @@ export default class Parser {
         const identifier = this.eatOnly(TokenType.Identifier,"Esperava um nome de variável")?.value;
         
         if (this.at().type==TokenType.EOL || this.at().type==TokenType.EOF) {
-            return { kind:"VarDecl", identifier,line: this.at().line} as VarDecl;
+            return { kind:"VarDecl", identifier,line: this.at().line,local} as VarDecl;
         } else if (this.at().type==TokenType.Assignment) {
-            const decl = {kind:"VarDecl",value:this.parseExpr(),identifier,type:varType,line: this.at().line} as VarDecl;
+            const decl = {kind:"VarDecl",value:this.parseStmt(),identifier,type:varType,line: this.at().line,local} as VarDecl;
             return decl;  
         } else {
             throw reportError("Esperava ; ou = na declaração de váriavel",this.at().line);            

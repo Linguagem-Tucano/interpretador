@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 // deno-lint-ignore-file no-explicit-any
 import Parser from "./parser.ts";
-import { clearOutputBuffer, evaluate, flushOutputBuffer } from "./interpreter.ts";
+import { clearOutputBuffer, evaluate, flushOutputBuffer, setGlobalEnv } from "./interpreter.ts";
 import Environment from "./environment.ts";
 import { Expr, FuncCall, Program, Stmt, StringLiteral } from "./ast.ts";
 
@@ -142,7 +142,7 @@ export function drawText(x: number, y: number, text: string, size: number) {
 
 function readFile() {
     const parser = new Parser();
-    const inputFile = Deno.args.at(0) ?? "";
+    const inputFile = Deno.args.at(0) as string;
     const decoder = new TextDecoder();
     const inputData = Deno.readFileSync(inputFile);
     const input = decoder.decode(inputData);
@@ -151,7 +151,7 @@ function readFile() {
         let program = {} as Program;
         program = parser.produceAST(input);
         clearOutputBuffer();
-        
+        setGlobalEnv(env); //only call this bs here
         program.body.forEach(element => {
             evaluate(element, env);
             flushOutputBuffer();

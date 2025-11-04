@@ -1,4 +1,4 @@
-import { Class, FuncDecl } from "./ast.ts";
+import { ClassExpr, FuncDecl } from "./ast.ts";
 import { RuntimeVal, ValueType } from "./values.ts";
 import { Function } from "./function.ts";
 import { reportError } from "./main.ts";
@@ -12,7 +12,7 @@ export default class Environment {
     private parent?: Environment;
     private variables: Map<string,RuntimeVal>;
     public functions: Map<string,Function>;
-    private classes: Map<string,Class>;
+    private classes: Map<string,ClassExpr>;
 
     constructor (parentENV?: Environment) {
         const global = parentENV==undefined ? true : false;
@@ -106,16 +106,16 @@ export default class Environment {
         return func
     }
 
-    public declareClass(classDecl:Class) {
+    public declareClass(classDecl:ClassExpr) {
         const identifier = classDecl.identifier;
         if (this.classes.has(identifier)) {throw "Classe "+identifier+" já declarada";}
         this.classes.set(identifier,classDecl);
         return classDecl;
     }
 
-    public resolveClass(classname:string): Class {
+    public resolveClass(classname:string): ClassExpr {
         if (this.classes.has(classname)) {
-            return this.classes.get(classname) as Class;
+            return this.classes.get(classname) as ClassExpr;
         }
         if (this.parent==undefined) {
             throw `Classe ${classname} não existe`;

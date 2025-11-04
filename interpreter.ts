@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-case-declarations
 import { ValueType, RuntimeVal, NumberVal, NullVal, MK_NULL, StringVal, BooleanVal, RealVal, ListVal, ObjectVal } from "./values.ts";
-import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Class, ComparatorExpr, ConvertExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UnaryExpr, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
+import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, ClassExpr, ComparatorExpr, ConvertExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, UnaryExpr, UntilStmt, VarDecl, WhileStmt } from "./ast.ts";
 import Environment from "./environment.ts";
 import { reportError } from "./main.ts";
 import { Function } from "./function.ts";
@@ -46,8 +46,8 @@ export function evaluate(astNode: Stmt, env: Environment):RuntimeVal {
             return evaluateFuncDecl(astNode as FuncDecl, env);
         case "FuncCall":
             return evaluateFuncCall(astNode as FuncCall, env);
-        case "Class":
-            return evaluateClassDecl(astNode as Class, env);
+        case "ClassExpr":
+            return evaluateClassDecl(astNode as ClassExpr, env);
         case "ReturnExpr":
             return evaluateReturnExpr(astNode as ReturnExpr, env);
         case "NewObjectExpr":
@@ -134,6 +134,16 @@ function evaluateConvertExpr(node: ConvertExpr, env:Environment): RuntimeVal {
             } else {
                 throw reportError("Não é possível converter "+firstType+" para real.", node.line);
             }
+        case "BooleanVal":
+            if (firstType=="StringVal") {
+                return {type:"BooleanVal", value:value.value=="verdadeiro"?true:false} as BooleanVal;
+            } else if (firstType=="NumberVal") {
+                return {type:"BooleanVal", value:value.value>0?true:false} as BooleanVal;
+            } else if (firstType=="RealVal") {
+                return {type:"BooleanVal", value:value.value>0?true:false} as BooleanVal;
+            } else {
+                throw reportError("Não é possível converter "+firstType+" para lógico.", node.line);
+            }
         default:
             throw reportError("Tipo de conversão desconhecido: "+desiredType, node.line);
     }
@@ -184,7 +194,7 @@ function evaluateNewObjectExpr(node: NewObjectExpr, env:Environment): RuntimeVal
     return evaluateFuncCall(call, objectEnv);
 }
 
-function evaluateClassDecl(node: Class, env: Environment): RuntimeVal {
+function evaluateClassDecl(node: ClassExpr, env: Environment): RuntimeVal {
     //declare class in environment
     env.declareClass(node);
     return MK_NULL();
@@ -481,7 +491,8 @@ function evaluateVarDecl(variable:VarDecl,env:Environment):RuntimeVal {
         }
     }
 
-    GLOBAL_ENV.declareVar(variable.identifier,value,type as ValueType);
+    const varEnv = variable.local ? env : GLOBAL_ENV;
+    varEnv.declareVar(variable.identifier,value,type as ValueType);
     return value;
 }
 
