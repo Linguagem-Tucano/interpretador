@@ -140,6 +140,8 @@ export function drawText(x: number, y: number, text: string, size: number) {
     }
 }
 
+export function drawRectangle(x:number,y:number,w:number,h:number) {}
+
 function readFile() {
     const parser = new Parser();
     const inputFile = Deno.args.at(0) as string;
