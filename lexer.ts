@@ -265,7 +265,7 @@ export function tokenize(sourceCode: string): Token[] {
                 }
                 lineNumber++;
                 src.shift();
-                if (src.length<=0) {
+                if (src.length>0) {
                     continue;
                 }
             }
