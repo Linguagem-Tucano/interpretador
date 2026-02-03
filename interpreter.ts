@@ -298,18 +298,17 @@ function evaluateForStmt(node: ForStmt, env:Environment):RuntimeVal {
     const identifier = node.variable.symbol;
     const step = evaluate(node.step,env) as NumberVal;
     
-    const newEnv = new Environment(env);
-
-    if (!newEnv.hasVar(identifier)) {
-        newEnv.declareVar(identifier,i,"NumberVal");
-    } else {
-        newEnv.assignVar(identifier, i);
-    }
-
+    
     const body = node.body;
     let ending = {} as RuntimeVal;
     for (let index=i.value; index<=end.value; index+=step.value) {
-        newEnv.assignVar(identifier, {value:index, type:"NumberVal"} as NumberVal);
+        const newEnv = new Environment(env);
+        
+        if (!newEnv.hasVar(identifier)) {
+            newEnv.declareVar(identifier,{value:index, type:"NumberVal"} as NumberVal,"NumberVal");
+        } else {
+            newEnv.assignVar(identifier, {value:index, type:"NumberVal"} as NumberVal);
+        }
         for (let index = 0; index < body.length; index++) {
                 const s = body[index];    
                 ending = evaluate(s, newEnv);
@@ -597,6 +596,8 @@ function evaluateFuncCall(node: FuncCall, env:Environment, argsEnv?: Environment
             }
         }        
     }
+
+
     try {
         return func.call(newEnv);
     } catch (error) {

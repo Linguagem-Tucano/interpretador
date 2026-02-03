@@ -95,12 +95,12 @@ const reservedWordsObj = {
     "função": TokenType.Funcao,
     "retorna": TokenType.Retorna,
 
-    "classe": TokenType.Classe,
+    /*"classe": TokenType.Classe,
     "construtor": TokenType.Construtor,
     "privado": TokenType.Privado,
     "protegido": TokenType.Protegido,
     "publico": TokenType.Publico,
-    "novo": TokenType.Novo,
+    "novo": TokenType.Novo,*/
 
     "converta": TokenType.Converter,
     "extende": TokenType.Extende,
@@ -224,7 +224,6 @@ export function tokenize(sourceCode: string): Token[] {
 
     //run til end of source code
     while (src.length>0) {
-        
         let testStr = src[0];
         if (testStr=="/") {
             testStr+=src[1];

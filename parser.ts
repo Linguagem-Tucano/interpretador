@@ -83,10 +83,6 @@ export default class Parser {
                 return this.parseWhileStmt();
             case TokenType.Repita:
                 return this.parseUntilStmt();
-            case TokenType.Classe:
-                return this.parseClassStmt();
-            case TokenType.Construtor:
-                return this.parseConstructor();
             case TokenType.Novo:
                 return this.parseNewObjectExpr();
             default:
@@ -119,106 +115,7 @@ export default class Parser {
         } as NewObjectExpr;
     }
 
-    private parseClassStmt(): Stmt {
-        this.advance(); // consume 'classe'
     
-        const identifier = this.eatOnly(TokenType.Identifier, "Esperava o nome da classe").value;
-        let parent = undefined;
-        if (this.at().type == TokenType.Extende) {
-            this.advance();
-            parent = this.eatOnly(TokenType.Identifier, "Esperava o nome de uma classe-pai").value;
-        }
-
-        this.eatOnly(TokenType.LChave, "Esperava '{' após o nome da classe");
-    
-        const body = [] as Stmt[];
-        this.insideClass = true;
-    
-        while (this.at().type !== TokenType.RChave && this.at().type !== TokenType.EOF) {
-            // Construtor
-            const s = this.parseStmt();
-            
-            body.push(s);
-        }
-    
-        this.insideClass = false;
-        this.advance(); // consume '}'
-        
-        const ret = {kind:"ClassExpr", identifier, body,line: this.at().line, parent} as ClassExpr;
-        return ret;
-    }
-    
-    private parseConstructor(): FuncDecl {
-        if (!this.insideClass) {
-            throw "Um construtor deve estar sempre dentro de uma classe"
-        }
-        const line = this.at().line;
-
-        this.advance(); // consume 'construtor'
-    
-        this.eatOnly(TokenType.LParen, "Esperava '(' após 'construtor'");
-        const args: ArgumentExpr[] = [];
-    
-        while (this.at().type !== TokenType.RParen && this.at().type !== TokenType.EOF) {
-            if (this.at().type === TokenType.Virgula) {
-                this.advance();
-                continue;
-            }
-        
-            const argname = this.eatOnly(TokenType.Identifier, "Esperava nome de argumento").value;
-            let argtype = "NullVal" as ValueType;
-        
-            if (this.at().type === TokenType.DoisPontos) {
-                this.advance(); // consume ':'
-                const argumenttype = this.advance();
-                switch(argumenttype.type) {
-                    case TokenType.Int:
-                        argtype="NumberVal";
-                        break;
-                    case TokenType.Caractere:
-                        argtype="StringVal";
-                        break;
-                    case TokenType.RealWord:
-                        argtype="RealVal";
-                        break;
-                    case TokenType.Logico:
-                        argtype="BooleanVal";
-                        break;
-                    case TokenType.Var:
-                        argtype="NullVal";
-                        break;
-                    default:
-                        throw "Esperava um tipo válido de variável. Recebi: "+argtype;
-                }
-            }
-        
-            args.push({
-                kind: "ArgumentExpr",
-                identifier: argname,
-                type: argtype,
-                line
-            });
-        }
-    
-        this.eatOnly(TokenType.RParen, "Esperava ')'");
-        this.eatOnly(TokenType.LChave, "Esperava '{' para iniciar corpo do construtor");
-    
-        const body: Stmt[] = [];
-        while (this.at().type !== TokenType.RChave && this.at().type !== TokenType.EOF) {
-            body.push(this.parseStmt());
-        }
-    
-        this.advance(); // consume '}'
-    
-        return {
-            kind: "FuncDecl",
-            identifier: "construtor",
-            type: "NullVal",
-            args,
-            body,
-            line
-        } as FuncDecl;
-    }
     
 
     private parseWhileStmt(): Stmt {

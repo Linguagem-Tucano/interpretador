@@ -3,8 +3,9 @@ import Environment from "./environment.ts";
 import { evaluate } from "./interpreter.ts";
 import { MK_NULL, NumberVal, RealVal, RuntimeVal, ValueType } from "./values.ts";
 import { reportError } from "./main.ts";
+import { Callable } from "./callable.ts";
 
-export class Function {
+export class Function implements Callable {
     public body: Stmt[];
     public args: ArgumentExpr[];
     public type: ValueType = "NullVal";

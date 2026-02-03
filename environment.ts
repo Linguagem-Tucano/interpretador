@@ -3,6 +3,7 @@ import { RuntimeVal, ValueType } from "./values.ts";
 import { Function } from "./function.ts";
 import { reportError } from "./main.ts";
 import { setupEnv } from "./globals.ts";
+import { Callable } from "./callable.ts";
 
 function setupScope(env: Environment) {
     setupEnv(env);
