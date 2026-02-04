@@ -1,12 +1,13 @@
 caractere[] frutas = ["abacaxi", "banana", "maçã"]
-var max = 2
+
 Saida.escreva("Temos as seguintes frutas: ")
 
-para (i=0,2000) faca {
-    local var fruta = frutas[i%3]
+para (i=0,2) faca {
+    var fruta = frutas[i%3]
     Saida.escreva(fruta)
-    se ( i<2000 ) { 
+    se ( i<2 ) { 
         Saida.escreva(", ") 
     }
 }
+
 Saida.escreval("")

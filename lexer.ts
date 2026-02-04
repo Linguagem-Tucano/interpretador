@@ -66,7 +66,7 @@ export enum TokenType {
     Novo,
     Converter,
     Extende,
-    Local,
+    Global,
 }
 const reservedWordsObj = {
     "var": TokenType.Var,
@@ -74,7 +74,7 @@ const reservedWordsObj = {
     "caractere": TokenType.Caractere,
     "real": TokenType.RealWord,
     "logico": TokenType.Logico,
-    "local": TokenType.Local,
+    "global": TokenType.Global,
     
     "se": TokenType.Se,
     "senao": TokenType.Senao,

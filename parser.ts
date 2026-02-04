@@ -69,7 +69,7 @@ export default class Parser {
                 return this.parseVarDecl();
             case TokenType.Logico:
                 return this.parseVarDecl();
-            case TokenType.Local:
+            case TokenType.Global:
                 return this.parseVarDecl();
             case TokenType.Se:
                 return this.parseIfStmt();
@@ -391,7 +391,7 @@ export default class Parser {
 
     private parseVarDecl(): Stmt {
         let local = false;
-        if (this.at().type == TokenType.Local) {local=true; this.advance();}
+        if (this.at().type == TokenType.Global) {local=true; this.advance();}
         let varType = this.advance().value;
         
         //check if list
@@ -406,9 +406,9 @@ export default class Parser {
         const identifier = this.eatOnly(TokenType.Identifier,"Esperava um nome de variável")?.value;
         
         if (this.at().type==TokenType.EOL || this.at().type==TokenType.EOF) {
-            return { kind:"VarDecl", identifier,line: this.at().line,local} as VarDecl;
+            return { kind:"VarDecl", identifier,line: this.at().line,global: local} as VarDecl;
         } else if (this.at().type==TokenType.Assignment) {
-            const decl = {kind:"VarDecl",value:this.parseStmt(),identifier,type:varType,line: this.at().line,local} as VarDecl;
+            const decl = {kind:"VarDecl",value:this.parseStmt(),identifier,type:varType,line: this.at().line,global: local} as VarDecl;
             return decl;  
         } else {
             throw reportError("Esperava ; ou = na declaração de váriavel",this.at().line);            

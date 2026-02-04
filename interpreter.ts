@@ -490,8 +490,13 @@ function evaluateVarDecl(variable:VarDecl,env:Environment):RuntimeVal {
         }
     }
 
-    const varEnv = variable.local ? env : GLOBAL_ENV;
-    varEnv.declareVar(variable.identifier,value,type as ValueType);
+    const varEnv = variable.global ? GLOBAL_ENV : env;
+    
+    try {
+        varEnv.declareVar(variable.identifier,value,type as ValueType);
+    } catch (error) {
+        throw reportError(error as string, variable.line)
+    }
     return value;
 }
 

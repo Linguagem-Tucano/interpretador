@@ -124,7 +124,7 @@ export interface VarDecl extends Stmt {
     identifier: string;
     type:string;
     value?: Expr;
-    local:boolean;
+    global:boolean;
 }
 
 export interface FuncDecl extends Stmt {
