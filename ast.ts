@@ -91,14 +91,14 @@ export interface ClassConstructor extends Stmt {
 export interface IfStmt extends Stmt {
     kind: "IfStmt";
     comparison: Expr;
-    body: Body;
+    body: Stmt[];
     else?: Stmt[];
     elseif?: IfStmt[];
 }
 
 export interface ForStmt extends Stmt {
     kind: "ForStmt";
-    body: Body;
+    body: Stmt[];
     variable: Identifier;
     startIndex: Expr;
     endIndex: Expr;
@@ -107,20 +107,20 @@ export interface ForStmt extends Stmt {
 
 export interface ForEachStmt extends Stmt {
     kind: "ForEachStmt";
-    body: Body;
+    body: Stmt[];
     variable: Identifier;
     list: Identifier;
 }
 
 export interface WhileStmt extends Stmt {
     kind: "WhileStmt";
-    body: Body;
+    body: Stmt[];
     comparison: Expr;
 }
 
 export interface UntilStmt extends Stmt {
     kind: "UntilStmt";
-    body: Body;
+    body: Stmt[];
     comparison: Expr;
 }
 
@@ -138,7 +138,7 @@ export interface FuncDecl extends Stmt {
     identifier: string;
     type:ValueType;
     args:ArgumentExpr[];
-    body:Body;
+    body:Stmt[];
 }
 
 export interface FuncCall extends Stmt {

@@ -15,7 +15,7 @@ export default class Environment {
     public functions: Map<string,Function>;
     private classes: Map<string,ClassExpr>;
 
-    private identifiers: Map<string,Callable>;
+    //private identifiers: Map<string,Callable>;
 
     constructor (parentENV?: Environment) {
         const global = parentENV==undefined ? true : false;

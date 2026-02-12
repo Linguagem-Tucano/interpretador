@@ -2,7 +2,7 @@ import Environment from "./environment.ts";
 import { BooleanVal, MK_NULL, ObjectVal, RuntimeVal } from "./values.ts";
 import { Function } from "./function.ts";
 import { ArgumentExpr } from "./ast.ts";
-import { clearCanvas, drawImage, drawLine, drawText } from "./main.ts";
+import { clearCanvas, drawImage, drawLine, drawText, setLineWidth } from "./main.ts";
 import { appendOutput, clearOutputBuffer } from "./interpreter.ts";
 
 export function setupEnv(env: Environment) {
@@ -152,6 +152,12 @@ export function setupEnv(env: Environment) {
         return MK_NULL();
     }
     telaEnv.functions.set("reta", reta);
+
+    const larguraReta = new Function([], [warg]);
+    larguraReta.call = function (_env: Environment) {
+        setLineWidth(_env.lookupVar('w').value as number);
+        return MK_NULL();
+    }
 
     const limpar = new Function([],[]);
     limpar.call = function(_env: Environment) {
