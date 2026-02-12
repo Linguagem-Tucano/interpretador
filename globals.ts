@@ -158,6 +158,7 @@ export function setupEnv(env: Environment) {
         setLineWidth(_env.lookupVar('w').value as number);
         return MK_NULL();
     }
+    telaEnv.functions.set("larguraReta", larguraReta);
 
     const limpar = new Function([],[]);
     limpar.call = function(_env: Environment) {
