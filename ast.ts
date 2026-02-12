@@ -13,6 +13,7 @@ export type nodeType =
 | "AssignmentExpr"
 | "UnaryExpr"
 | "EOL"
+| "Body"
 
 | "Property"
 | "ObjectLiteral"
@@ -59,6 +60,11 @@ export interface Program extends Stmt {
     body: Stmt[];
 }
 
+export interface Body extends Stmt {
+    kind: "Body";
+    body: Stmt[];
+}
+
 export interface ClassExpr extends Stmt {
     kind: "ClassExpr";
     identifier: string;
@@ -85,14 +91,14 @@ export interface ClassConstructor extends Stmt {
 export interface IfStmt extends Stmt {
     kind: "IfStmt";
     comparison: Expr;
-    body: Stmt[];
+    body: Body;
     else?: Stmt[];
     elseif?: IfStmt[];
 }
 
 export interface ForStmt extends Stmt {
     kind: "ForStmt";
-    body: Stmt[];
+    body: Body;
     variable: Identifier;
     startIndex: Expr;
     endIndex: Expr;
@@ -101,20 +107,20 @@ export interface ForStmt extends Stmt {
 
 export interface ForEachStmt extends Stmt {
     kind: "ForEachStmt";
-    body: Stmt[];
+    body: Body;
     variable: Identifier;
     list: Identifier;
 }
 
 export interface WhileStmt extends Stmt {
     kind: "WhileStmt";
-    body: Stmt[];
+    body: Body;
     comparison: Expr;
 }
 
 export interface UntilStmt extends Stmt {
     kind: "UntilStmt";
-    body: Stmt[];
+    body: Body;
     comparison: Expr;
 }
 
@@ -132,7 +138,7 @@ export interface FuncDecl extends Stmt {
     identifier: string;
     type:ValueType;
     args:ArgumentExpr[];
-    body:Stmt[];
+    body:Body;
 }
 
 export interface FuncCall extends Stmt {

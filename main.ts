@@ -140,6 +140,40 @@ export function drawText(x: number, y: number, text: string, size: number) {
     }
 }
 
+export function setLineWidth(w:number) { 
+    //Set line width using ctx
+     if (ctx != undefined) {
+         ctx.lineWidth = w;
+     } else {
+         throw "Ambiente não suporta gráficos";
+     }
+ }
+
+ export function setStrokeStyle(style: string) {
+     if (ctx != undefined) {
+         ctx.strokeStyle = style;
+     } else {
+         throw "Ambiente não suporta gráficos";
+     }
+ }
+
+ export function setFillStyle(style: string) {
+     if (ctx != undefined) {
+         ctx.fillStyle = style;
+     } else {
+         throw "Ambiente não suporta gráficos";
+     }
+ }
+
+ export function saveCanvas() {
+    if (ctx != undefined) {
+        const dataURL = ctx.canvas.toDataURL("image/png");
+        return dataURL;
+    } else {
+        throw "Ambiente não suporta gráficos";
+    }
+}
+
 export function drawRectangle(x:number,y:number,w:number,h:number) {}
 
 function readFile() {
