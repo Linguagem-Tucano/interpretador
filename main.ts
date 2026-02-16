@@ -1,7 +1,12 @@
 /// <reference lib="dom" />
 // deno-lint-ignore-file no-explicit-any
 import Parser from "./parser.ts";
-import { clearOutputBuffer, evaluate, flushOutputBuffer, setGlobalEnv } from "./interpreter.ts";
+import {
+    clearOutputBuffer,
+    evaluate,
+    flushOutputBuffer,
+    setGlobalEnv,
+} from "./interpreter.ts";
 import Environment from "./environment.ts";
 import { Expr, FuncCall, Program, Stmt, StringLiteral } from "./ast.ts";
 
@@ -110,7 +115,13 @@ export function drawImage(
     img: string,
 ) {
     if (ctx != undefined) {
-        const image = document.getElementById(img);
+        let image;
+        if (window.getTucanoImage) {
+            image = window.getTucanoImage(img);
+        } else {
+            image = document.getElementById(img);
+        }
+
         if (image) {
             ctx.drawImage(image, x, y, w, h);
         } else {
@@ -140,32 +151,32 @@ export function drawText(x: number, y: number, text: string, size: number) {
     }
 }
 
-export function setLineWidth(w:number) { 
+export function setLineWidth(w: number) {
     //Set line width using ctx
-     if (ctx != undefined) {
-         ctx.lineWidth = w;
-     } else {
-         throw "Ambiente não suporta gráficos";
-     }
- }
+    if (ctx != undefined) {
+        ctx.lineWidth = w;
+    } else {
+        throw "Ambiente não suporta gráficos";
+    }
+}
 
- export function setStrokeStyle(style: string) {
-     if (ctx != undefined) {
-         ctx.strokeStyle = style;
-     } else {
-         throw "Ambiente não suporta gráficos";
-     }
- }
+export function setStrokeStyle(style: string) {
+    if (ctx != undefined) {
+        ctx.strokeStyle = style;
+    } else {
+        throw "Ambiente não suporta gráficos";
+    }
+}
 
- export function setFillStyle(style: string) {
-     if (ctx != undefined) {
-         ctx.fillStyle = style;
-     } else {
-         throw "Ambiente não suporta gráficos";
-     }
- }
+export function setFillStyle(style: string) {
+    if (ctx != undefined) {
+        ctx.fillStyle = style;
+    } else {
+        throw "Ambiente não suporta gráficos";
+    }
+}
 
- export function saveCanvas() {
+export function saveCanvas() {
     if (ctx != undefined) {
         const dataURL = ctx.canvas.toDataURL("image/png");
         return dataURL;
@@ -174,7 +185,7 @@ export function setLineWidth(w:number) {
     }
 }
 
-export function drawRectangle(x:number,y:number,w:number,h:number) {}
+export function drawRectangle(x: number, y: number, w: number, h: number) {}
 
 function readFile() {
     const parser = new Parser();
@@ -182,19 +193,16 @@ function readFile() {
     const decoder = new TextDecoder();
     const inputData = Deno.readFileSync(inputFile);
     const input = decoder.decode(inputData);
-    
+
     try {
         let program = {} as Program;
         program = parser.produceAST(input);
         clearOutputBuffer();
         setGlobalEnv(env); //only call this bs here
-        program.body.forEach(element => {
+        program.body.forEach((element) => {
             evaluate(element, env);
             flushOutputBuffer();
         });
-        
-
-        
     } catch (_error) {
         //empty
     }
