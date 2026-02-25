@@ -59,6 +59,20 @@ export function interpret(text: string) {
     }
 }
 
+export const stoppingLines = [] as number[];
+
+export function shouldWeStop(numLine: number):boolean {
+    for (let index = 0; index < stoppingLines.length; index++) {
+        const element = stoppingLines[index];
+        if (numLine == element) return true;
+    }
+    return false;
+}
+
+stoppingLines[0] = 1;
+
+console.assert(shouldWeStop(1));
+
 export function resetEnv() {
     env = new Environment();
 }
