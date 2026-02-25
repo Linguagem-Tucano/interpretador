@@ -59,19 +59,23 @@ export function interpret(text: string) {
     }
 }
 
-export const stoppingLines = [] as number[];
+export let stoppingLines = [] as Array<number>;
 
 export function shouldWeStop(numLine: number):boolean {
-    for (let index = 0; index < stoppingLines.length; index++) {
-        const element = stoppingLines[index];
-        if (numLine == element) return true;
-    }
-    return false;
+    return stoppingLines.includes(numLine); //simple and clean
 }
 
-stoppingLines[0] = 1;
+export function addStoppingLine(num: number){
+    if (stoppingLines.includes(num)) return false; //do not push into array if it exists
+    stoppingLines.push(num);
+    return true;
+}
 
-console.assert(shouldWeStop(1));
+export function removeStoppingLine(num:number){
+    if (!stoppingLines.includes(num)) return false; //dont remove what doesnt exist
+    stoppingLines = stoppingLines.filter((n) => n!==num)
+    return true;
+}
 
 export function resetEnv() {
     env = new Environment();
