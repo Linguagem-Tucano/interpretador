@@ -14,7 +14,9 @@ let env = new Environment();
 
 let ctx = undefined as any;
 
-export function repl() {
+let getTucanoImage = undefined as any;
+
+export async function repl() {
     const parser = new Parser();
     console.log("Tucano interativo v0.1");
     console.log("Beta público.");
@@ -31,7 +33,7 @@ export function repl() {
             let program = {} as Program;
             program = parser.produceAST(input);
 
-            result = evaluate(program, env);
+            result = await evaluate(program, env);
 
             let v = result.value;
             if (result.type == "BooleanVal") {
@@ -45,7 +47,7 @@ export function repl() {
     }
 }
 
-export function interpret(text: string) {
+export async function interpret(text: string) {
     const parser = new Parser();
     const code = text;
     let program;
@@ -53,7 +55,7 @@ export function interpret(text: string) {
     //console.log(program);
     try {
         program = parser.produceAST(code);
-        return evaluate(program, env);
+        return await evaluate(program, env);
     } catch (_error) {
         //empty
     }
@@ -65,6 +67,10 @@ export function resetEnv() {
 
 export function setCtx(newCtx: any) {
     ctx = newCtx;
+}
+
+export function setTucanoGetImage(newFunc: any) {
+    getTucanoImage = newFunc;
 }
 
 export function callbackFun(funcname: string, argumentos: string[]) {
@@ -116,8 +122,8 @@ export function drawImage(
 ) {
     if (ctx != undefined) {
         let image;
-        if (window.getTucanoImage) {
-            image = window.getTucanoImage(img);
+        if (getTucanoImage) {
+            image = getTucanoImage(img);
         } else {
             image = document.getElementById(img);
         }
