@@ -67,6 +67,8 @@ export enum TokenType {
     Converter,
     Extende,
     Global,
+    Escolha,
+    Caso,
 }
 const reservedWordsObj = {
     "var": TokenType.Var,
@@ -104,6 +106,9 @@ const reservedWordsObj = {
 
     "converta": TokenType.Converter,
     "extende": TokenType.Extende,
+
+    "escolha": TokenType.Escolha,
+    "caso": TokenType.Caso,
 };
 
 export const reservedWords = new Map<string, TokenType>(

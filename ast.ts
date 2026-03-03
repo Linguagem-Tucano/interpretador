@@ -96,6 +96,12 @@ export interface IfStmt extends Stmt {
     elseif?: IfStmt[];
 }
 
+export interface SwitchStmt extends Stmt {
+    kind: "SwitchStmt";
+    value: Expr;
+    cases: Map<Expr, Stmt[]>;
+}
+
 export interface ForStmt extends Stmt {
     kind: "ForStmt";
     body: Stmt[];

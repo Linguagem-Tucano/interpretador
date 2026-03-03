@@ -1,0 +1,9 @@
+var a = 1
+escolha a {
+    caso 1:
+        Saida.escreval("Oi ".. a)
+    caso 2:
+        Saida.escreval("Oi ".. a)
+    caso 3:
+        Saida.escreval("Oi ".. a)
+}

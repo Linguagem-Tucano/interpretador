@@ -91,7 +91,7 @@ export function setTucanoGetImage(newFunc: any) {
     getTucanoImage = newFunc;
 }
 
-export function callbackFun(funcname: string, argumentos: string[]) {
+export async function callbackFun(funcname: string, argumentos: string[]) {
     if (env.hasFunc(funcname)) {
         const args = [] as Expr[];
         for (let i = 0; i < argumentos.length; i++) {
@@ -109,7 +109,7 @@ export function callbackFun(funcname: string, argumentos: string[]) {
         } as FuncCall;
         const body = [funccall] as Stmt[];
         const pr = { kind: "Program", body } as Program;
-        evaluate(pr, env);
+        await evaluate(pr, env);
     }
 }
 
@@ -211,7 +211,7 @@ export function saveCanvas() {
 
 export function drawRectangle(x: number, y: number, w: number, h: number) {}
 
-function readFile() {
+async function readFile() {
     const parser = new Parser();
     const inputFile = Deno.args.at(0) as string;
     const decoder = new TextDecoder();
@@ -223,8 +223,8 @@ function readFile() {
         program = parser.produceAST(input);
         clearOutputBuffer();
         setGlobalEnv(env); //only call this bs here
-        program.body.forEach((element) => {
-            evaluate(element, env);
+        await program.body.forEach(async (element) => {
+            await evaluate(element, env);
             flushOutputBuffer();
         });
     } catch (_error) {
