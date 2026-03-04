@@ -2,7 +2,7 @@ import Environment from "./environment.ts";
 import { BooleanVal, MK_NULL, ObjectVal, RuntimeVal } from "./values.ts";
 import { Function } from "./function.ts";
 import { ArgumentExpr } from "./ast.ts";
-import { clearCanvas, drawImage, drawLine, drawText, setLineWidth } from "./main.ts";
+import { clearCanvas, drawImage, drawLine, drawRectangle, drawText, setLineWidth } from "./main.ts";
 import { appendOutput, clearOutputBuffer } from "./interpreter.ts";
 
 export function setupEnv(env: Environment) {
@@ -137,6 +137,17 @@ export function setupEnv(env: Environment) {
         return MK_NULL();
     }
     telaEnv.functions.set("desenhar", desenhar);
+
+    const retangulo = new Function([],[xarg,yarg,warg,harg]);
+    retangulo.call = function(_env: Environment) {
+        const x = _env.lookupVar("x");
+        const y = _env.lookupVar("y");
+        const w = _env.lookupVar("w");
+        const h = _env.lookupVar("h");
+        drawRectangle(x.value as number, y.value as number, w.value as number, h.value as number);
+        return MK_NULL();
+    }
+    telaEnv.functions.set("retangulo", retangulo);
 
     const x1arg = {kind:"ArgumentExpr",identifier:"x1", type:"NullVal"} as ArgumentExpr;
     const y1arg = {kind:"ArgumentExpr",identifier:"y1", type:"NullVal"} as ArgumentExpr;
