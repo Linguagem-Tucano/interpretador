@@ -209,7 +209,13 @@ export function saveCanvas() {
     }
 }
 
-export function drawRectangle(x: number, y: number, w: number, h: number) {}
+export function drawRectangle(x: number, y: number, w: number, h: number) {
+    if (ctx != undefined) {
+        ctx.rect(x,y,w,h);
+    } else {
+        throw "Ambiente não suporta gráficos";
+    }
+}
 
 async function readFile() {
     const parser = new Parser();
