@@ -43,6 +43,7 @@ export async function repl() {
             console.log(v);
         } catch (_error) {
             //empty
+            console.log(_error)
         }
     }
 }

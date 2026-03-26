@@ -39,8 +39,6 @@ import { reportError } from "./main.ts";
 export default class Parser {
     private tokens: Token[] = [];
 
-    private insideClass = false;
-
     private at(): Token {
         return this.tokens[0] as Token;
     }
@@ -84,7 +82,7 @@ export default class Parser {
     }
 
     private notEOF(): boolean {
-        return this.tokens[0].type != TokenType.EOF;
+        return this.tokens[0].type !== TokenType.EOF;
     }
 
     public parseStmt(): Stmt {

@@ -213,7 +213,7 @@ function isPonto(str: string): boolean {
 }
 
 function isReal(str: string): boolean {
-    return isNumber(str) || str.includes(".");
+    return isNumber(str) || (str?str.includes("."):false);
 }
 
 function isAspas(str: string): boolean {
@@ -226,9 +226,6 @@ function isWhiteSpace(str: string): boolean {
 
 function isReservedWord(str: string): boolean {
     return reservedWords.has(str.toLowerCase());
-}
-
-function isComparator() {
 }
 
 function token(value: string, type: TokenType, line: number): Token {
@@ -300,7 +297,10 @@ export function tokenize(sourceCode: string): Token[] {
                 src.shift();
                 if (src.length > 0) {
                     continue;
+                } else {
+                    break;
                 }
+
             }
         }
 
@@ -393,7 +393,6 @@ export function tokenize(sourceCode: string): Token[] {
     }
 
     tokens.push(token("EOF", TokenType.EOF, lineNumber));
-    //console.log(tokens);
     return tokens;
 }
 
