@@ -579,6 +579,7 @@ export default class Parser {
                 identifier,
                 line: this.at().line,
                 global: local,
+                type:varType,
             } as VarDecl;
         } else if (this.at().type == TokenType.Assignment) {
             const decl = {

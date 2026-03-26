@@ -3,7 +3,7 @@ import { BooleanVal, MK_NULL, ObjectVal, RuntimeVal } from "./values.ts";
 import { Function } from "./function.ts";
 import { ArgumentExpr } from "./ast.ts";
 import { clearCanvas, drawImage, drawLine, drawRectangle, drawText, setLineWidth } from "./main.ts";
-import { appendOutput, clearOutputBuffer } from "./interpreter.ts";
+import { appendOutput, clearOutputBuffer, flushOutputBuffer } from "./interpreter.ts";
 
 export function setupEnv(env: Environment) {
     env.declareVar("verdadeiro",{type:"BooleanVal",value:true} as BooleanVal,"BooleanVal");
@@ -77,6 +77,7 @@ export function setupEnv(env: Environment) {
 
     const leia = new Function([],[]);
     leia.call = function(_env: Environment) {
+        flushOutputBuffer();
         const input = prompt("");
         return {type:"StringVal",value:input} as RuntimeVal;
     }
