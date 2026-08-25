@@ -212,7 +212,7 @@ export interface StringLiteral extends Expr {
 
 export interface AssignmentExpr extends Expr {
     kind: "AssignmentExpr";
-    assigne: Expr;
+    assigne: AttributeLookup | ListIdentifier | Identifier;
     value: Expr;
 }
 

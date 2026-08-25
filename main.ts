@@ -16,7 +16,7 @@ let ctx = undefined as any;
 
 let getTucanoImage = undefined as any;
 
-export async function repl() {
+export function repl() {
     const parser = new Parser();
     console.log("Tucano interativo v0.1");
     console.log("Beta público.");
@@ -33,7 +33,7 @@ export async function repl() {
             let program = {} as Program;
             program = parser.produceAST(input);
 
-            result = await evaluate(program, env);
+            result = evaluate(program, env);
 
             let v = result.value;
             if (result.type == "BooleanVal") {
@@ -48,7 +48,7 @@ export async function repl() {
     }
 }
 
-export async function interpret(text: string) {
+export function interpret(text: string) {
     const parser = new Parser();
     const code = text;
     let program;
@@ -56,7 +56,7 @@ export async function interpret(text: string) {
     //console.log(program);
     try {
         program = parser.produceAST(code);
-        return await evaluate(program, env);
+        return evaluate(program, env);
     } catch (_error) {
         //empty
     }
@@ -92,7 +92,7 @@ export function setTucanoGetImage(newFunc: any) {
     getTucanoImage = newFunc;
 }
 
-export async function callbackFun(funcname: string, argumentos: string[]) {
+export function callbackFun(funcname: string, argumentos: string[]) {
     if (env.hasFunc(funcname)) {
         const args = [] as Expr[];
         for (let i = 0; i < argumentos.length; i++) {
@@ -110,7 +110,7 @@ export async function callbackFun(funcname: string, argumentos: string[]) {
         } as FuncCall;
         const body = [funccall] as Stmt[];
         const pr = { kind: "Program", body } as Program;
-        await evaluate(pr, env);
+        evaluate(pr, env);
     }
 }
 
@@ -218,7 +218,7 @@ export function drawRectangle(x: number, y: number, w: number, h: number) {
     }
 }
 
-async function readFile() {
+function readFile() {
     const parser = new Parser();
     const inputFile = Deno.args.at(0) as string;
     const decoder = new TextDecoder();
@@ -230,8 +230,8 @@ async function readFile() {
         program = parser.produceAST(input);
         clearOutputBuffer();
         setGlobalEnv(env); //only call this bs here
-        await program.body.forEach(async (element) => {
-            await evaluate(element, env);
+        program.body.forEach((element) => {
+            evaluate(element, env);
             flushOutputBuffer();
         });
     } catch (_error) {

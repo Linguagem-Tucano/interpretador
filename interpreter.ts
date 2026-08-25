@@ -46,10 +46,10 @@ import Environment from "./environment.ts";
 import { reportError } from "./main.ts";
 import { Function } from "./function.ts";
 
-export async function evaluate(
+export function evaluate(
     astNode: Stmt,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     switch (astNode.kind) {
         case "NumericLiteral":
             return {
@@ -74,53 +74,53 @@ export async function evaluate(
                 type: "ObjectVal",
             } as ObjectVal;
         case "ListLiteral":
-            return await evaluateListLiteral(astNode as ListLiteral, env);
+            return evaluateListLiteral(astNode as ListLiteral, env);
         case "ListIdentifier":
-            return await evaluateListIdentifier(astNode as ListIdentifier, env);
+            return evaluateListIdentifier(astNode as ListIdentifier, env);
         case "BinaryExpr":
-            return await evaluateBinaryExpr(astNode as BinaryExpr, env);
+            return evaluateBinaryExpr(astNode as BinaryExpr, env);
         case "Identifier":
-            return await evaluateIdentifier(astNode as Identifier, env);
+            return evaluateIdentifier(astNode as Identifier, env);
         case "Program":
-            return await evaluateProgram(astNode as Program, env);
+            return evaluateProgram(astNode as Program, env);
         case "VarDecl":
-            return await evaluateVarDecl(astNode as VarDecl, env);
+            return evaluateVarDecl(astNode as VarDecl, env);
         case "AssignmentExpr":
-            return await evaluateVarAssignment(astNode as AssignmentExpr, env);
+            return evaluateVarAssignment(astNode as AssignmentExpr, env);
         case "ComparatorExpr":
-            return await evaluateComparison(astNode as ComparatorExpr, env);
+            return evaluateComparison(astNode as ComparatorExpr, env);
         case "IfStmt":
-            return await evaluateIfStmt(astNode as IfStmt, env);
+            return evaluateIfStmt(astNode as IfStmt, env);
         case "ForStmt":
-            return await evaluateForStmt(astNode as ForStmt, env);
+            return evaluateForStmt(astNode as ForStmt, env);
         case "ForEachStmt":
-            return await evaluateForEachStmt(astNode as ForEachStmt, env);
+            return evaluateForEachStmt(astNode as ForEachStmt, env);
         case "WhileStmt":
-            return await evaluateWhileStmt(astNode as WhileStmt, env);
+            return evaluateWhileStmt(astNode as WhileStmt, env);
         case "UntilStmt":
-            return await evaluateUntilStmt(astNode as UntilStmt, env);
+            return evaluateUntilStmt(astNode as UntilStmt, env);
         case "FuncDecl":
-            return await evaluateFuncDecl(astNode as FuncDecl, env);
+            return evaluateFuncDecl(astNode as FuncDecl, env);
         case "FuncCall":
-            return await evaluateFuncCall(astNode as FuncCall, env);
+            return evaluateFuncCall(astNode as FuncCall, env);
         case "ClassExpr":
-            return await evaluateClassDecl(astNode as ClassExpr, env);
+            return evaluateClassDecl(astNode as ClassExpr, env);
         case "ReturnExpr":
-            return await evaluateReturnExpr(astNode as ReturnExpr, env);
+            return evaluateReturnExpr(astNode as ReturnExpr, env);
         case "NewObjectExpr":
-            return await evaluateNewObjectExpr(astNode as NewObjectExpr, env);
+            return evaluateNewObjectExpr(astNode as NewObjectExpr, env);
         case "AttributeLookup":
-            return await evaluateAttributeLookup(astNode as AttributeLookup, env);
+            return evaluateAttributeLookup(astNode as AttributeLookup, env);
         case "CallLookup":
-            return await evaluateCallLookup(astNode as CallLookup, env);
+            return evaluateCallLookup(astNode as CallLookup, env);
         case "ConvertExpr":
-            return await evaluateConvertExpr(astNode as ConvertExpr, env);
+            return evaluateConvertExpr(astNode as ConvertExpr, env);
         case "UnaryExpr":
-            return await evaluateUnaryExpr(astNode as UnaryExpr, env);
+            return evaluateUnaryExpr(astNode as UnaryExpr, env);
         case "EOL":
             return MK_NULL();
         case "SwitchStmt":
-            return await evaluateSwitchStmt(astNode as SwitchStmt, env);
+            return evaluateSwitchStmt(astNode as SwitchStmt, env);
         default:
             throw reportError(
                 "Tipo de nó desconhecido: " + astNode.kind,
@@ -129,17 +129,17 @@ export async function evaluate(
     }
 }
 
-async function evaluateSwitchStmt(
+function evaluateSwitchStmt(
     node: SwitchStmt,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const mapaResolvido = new Map<string, Stmt[]>();
 
     for (const [chave, valor] of node.cases) {
-        mapaResolvido.set((await evaluate(chave, env)).value, valor);
+        mapaResolvido.set((evaluate(chave, env)).value, valor);
     }
 
-    const mestre = (await evaluate(node.value, env)).value;
+    const mestre = (evaluate(node.value, env)).value;
 
     const body = mapaResolvido.get(mestre) ?? ([] as Stmt[]);
 
@@ -153,26 +153,26 @@ async function evaluateSwitchStmt(
 
     for (let index = 0; index < body.length; index++) {
         const s = body[index];
-        ending = await evaluate(s, newEnv);
+        ending = evaluate(s, newEnv);
     }
 
     return ending;
 }
 
-async function evaluateUnaryExpr(
+function evaluateUnaryExpr(
     node: UnaryExpr,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     switch (node.operator) {
         case "nao":
-            const nope = (await evaluate(node.value, env)) as RuntimeVal;
+            const nope = (evaluate(node.value, env)) as RuntimeVal;
             if (nope.type != "BooleanVal") {
                 throw reportError("Tentou negar um valor não booleano", node.line);
             }
-            nope.value = !nope.value;
-            return nope;
+            
+            return {...nope, value:!nope.value};
         case "-":
-            const val = await evaluate(node.value, env);
+            const val = evaluate(node.value, env);
             if (val.type != "NumberVal" && val.type != "RealVal") {
                 throw reportError("Tentou negativar um valor não numérico", node.line);
             }
@@ -186,11 +186,11 @@ async function evaluateUnaryExpr(
     }
 }
 
-async function evaluateConvertExpr(
+function evaluateConvertExpr(
     node: ConvertExpr,
     env: Environment,
-): Promise<RuntimeVal> {
-    const value = await evaluate(node.value, env);
+): RuntimeVal {
+    const value = evaluate(node.value, env);
     const firstType = value.type as ValueType;
     const desiredType = node.type as ValueType;
 
@@ -312,10 +312,10 @@ function evaluateAttributeLookup(
     return ret;
 }
 
-async function evaluateCallLookup(
+function evaluateCallLookup(
     node: CallLookup,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const obj = lookupVar(node, node.symbol, env) as ObjectVal;
     const objEnv = obj.env;
 
@@ -325,14 +325,14 @@ async function evaluateCallLookup(
         kind: "FuncCall",
         line: node.line,
     } as FuncCall;
-    const ret = await evaluateFuncCall(c, objEnv, env); //para ele fazer lookup no ambiente normal.
+    const ret = evaluateFuncCall(c, objEnv, env); //para ele fazer lookup no ambiente normal.
     return ret;
 }
 
-async function evaluateNewObjectExpr(
+function evaluateNewObjectExpr(
     node: NewObjectExpr,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const nodeClass = env.resolveClass(node.class);
 
     const _parent = nodeClass.parent;
@@ -362,7 +362,7 @@ async function evaluateNewObjectExpr(
 
     const call = { kind: "FuncCall", args, identifier } as FuncCall;
     //console.log(objectEnv);
-    return await evaluateFuncCall(call, objectEnv);
+    return evaluateFuncCall(call, objectEnv);
 }
 
 function evaluateClassDecl(node: ClassExpr, env: Environment): RuntimeVal {
@@ -371,14 +371,14 @@ function evaluateClassDecl(node: ClassExpr, env: Environment): RuntimeVal {
     return MK_NULL();
 }
 
-async function evaluateWhileStmt(
+function evaluateWhileStmt(
     node: WhileStmt,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const comparison = node.comparison;
     const newEnv = new Environment(env);
 
-    let evaluated = (await evaluate(comparison, newEnv)) as BooleanVal;
+    let evaluated = (evaluate(comparison, newEnv)) as BooleanVal;
 
     const body = node.body;
 
@@ -387,21 +387,21 @@ async function evaluateWhileStmt(
     while (evaluated.type == "BooleanVal" && evaluated.value == true) {
         for (let index = 0; index < body.length; index++) {
             const s = body[index];
-            ending = await evaluate(s, newEnv);
+            ending = evaluate(s, newEnv);
         }
-        evaluated = (await evaluate(comparison, newEnv)) as BooleanVal;
+        evaluated = (evaluate(comparison, newEnv)) as BooleanVal;
     }
     return ending;
 }
 
-async function evaluateUntilStmt(
+function evaluateUntilStmt(
     node: UntilStmt,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const comparison = node.comparison;
     const newEnv = new Environment(env);
 
-    let evaluated = (await evaluate(comparison, newEnv)) as BooleanVal;
+    let evaluated = (evaluate(comparison, newEnv)) as BooleanVal;
 
     const body = node.body;
 
@@ -410,17 +410,17 @@ async function evaluateUntilStmt(
     while (evaluated.type == "BooleanVal" && evaluated.value == false) {
         for (let index = 0; index < body.length; index++) {
             const s = body[index];
-            ending = await evaluate(s, newEnv);
+            ending = evaluate(s, newEnv);
         }
-        evaluated = (await evaluate(comparison, newEnv)) as BooleanVal;
+        evaluated = (evaluate(comparison, newEnv)) as BooleanVal;
     }
     return ending;
 }
 
-async function evaluateListIdentifier(
+function evaluateListIdentifier(
     node: ListIdentifier,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const symbol = node.symbol;
     if (env.hasVar(symbol)) {
         let list = lookupVar(node, symbol, env) as ListVal;
@@ -428,7 +428,7 @@ async function evaluateListIdentifier(
         let curr = 0;
         while (i > 0) {
             i--;
-            const smallLookup = (await evaluate(node.lookup[curr], env)) as NumberVal;
+            const smallLookup = (evaluate(node.lookup[curr], env)) as NumberVal;
             if (list.listType !== "ListVal") {
                 throw reportError(
                     "Tentou buscar um índice em uma variável que não é lista",
@@ -438,24 +438,24 @@ async function evaluateListIdentifier(
             list = list.value[smallLookup.value] as ListVal;
             curr++;
         }
-        const lookup = (await evaluate(node.lookup[curr], env)) as NumberVal;
+        const lookup = (evaluate(node.lookup[curr], env)) as NumberVal;
         return list.value[lookup.value];
     } else {
         throw reportError("Lista não existe", node.line);
     }
 }
 
-async function evaluateListLiteral(
+function evaluateListLiteral(
     node: ListLiteral,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const values = node.values;
     let type = null;
     const list = [] as RuntimeVal[];
     for (let i = 0; i <= values.length - 1; i++) {
         const value = values[i];
 
-        const v = await evaluate(value, env);
+        const v = evaluate(value, env);
         if (type == null) {
             type = v.type;
         }
@@ -469,11 +469,11 @@ async function evaluateListLiteral(
     return { type: "ListVal", value: list, listType: type } as ListVal;
 }
 
-async function evaluateReturnExpr(
+function evaluateReturnExpr(
     node: ReturnExpr,
     env: Environment,
-): Promise<RuntimeVal> {
-    return await evaluate(node.value, env);
+): RuntimeVal {
+    return evaluate(node.value, env);
 }
 
 function evaluateFuncDecl(node: FuncDecl, env: Environment): RuntimeVal {
@@ -481,16 +481,16 @@ function evaluateFuncDecl(node: FuncDecl, env: Environment): RuntimeVal {
     return MK_NULL();
 }
 
-async function evaluateForStmt(
+function evaluateForStmt(
     node: ForStmt,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const starti = node.startIndex;
-    const i = await evaluate(starti, env);
+    const i = evaluate(starti, env);
     const endi = node.endIndex;
-    const end = await evaluate(endi, env);
+    const end = evaluate(endi, env);
     const identifier = node.variable.symbol;
-    const step = (await evaluate(node.step, env)) as NumberVal;
+    const step = (evaluate(node.step, env)) as NumberVal;
 
     const body = node.body;
     let ending = {} as RuntimeVal;
@@ -511,17 +511,17 @@ async function evaluateForStmt(
         }
         for (let index = 0; index < body.length; index++) {
             const s = body[index];
-            ending = await evaluate(s, newEnv);
+            ending = evaluate(s, newEnv);
         }
     }
 
     return ending;
 }
 
-async function evaluateForEachStmt(
+function evaluateForEachStmt(
     node: ForEachStmt,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const lista = node.list.symbol;
     const identifier = node.variable.symbol;
 
@@ -553,56 +553,56 @@ async function evaluateForEachStmt(
 
         for (let index = 0; index < body.length; index++) {
             const s = body[index];
-            ending = await evaluate(s, newEnv);
+            ending = evaluate(s, newEnv);
         }
     }
 
     return ending;
 }
 
-async function evaluateIfStmt(
+function evaluateIfStmt(
     node: IfStmt,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const comparison = node.comparison;
     const body = node.body;
-    const resultComp = (await evaluate(comparison, env)) as BooleanVal;
+    const resultComp = (evaluate(comparison, env)) as BooleanVal;
     let lastRes = MK_NULL() as RuntimeVal;
     if (resultComp.value == true) {
         const newEnv = new Environment(env);
         for (let index = 0; index < body.length; index++) {
             const s = body[index];
-            const curr = await evaluate(s, newEnv);
+            const curr = evaluate(s, newEnv);
             if (curr.type != "NullVal") lastRes = curr;
         }
     } else if (node.else) {
         const newEnv = new Environment(env);
         for (let index = 0; index < node.else.length; index++) {
             const s = node.else[index];
-            const curr = await evaluate(s, newEnv);
+            const curr = evaluate(s, newEnv);
             if (curr.type != "NullVal") lastRes = curr;
         }
     }
     return lastRes;
 }
 
-async function evaluateComparison(
+function evaluateComparison(
     node: ComparatorExpr,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const operator = node.operator;
     const result = { value: false, type: "BooleanVal" } as BooleanVal;
     let left, right;
     try {
         switch (operator) {
             case "==":
-                left = await evaluate(node.left, env);
-                right = await evaluate(node.right, env);
+                left = evaluate(node.left, env);
+                right = evaluate(node.right, env);
                 result.value = left.value == right.value && left.type == right.type;
                 break;
             case ">=":
-                left = await evaluate(node.left, env);
-                right = await evaluate(node.right, env);
+                left = evaluate(node.left, env);
+                right = evaluate(node.right, env);
                 if (
                     (right.type == "NumberVal" || right.type == "RealVal") &&
                     (left.type == "NumberVal" || left.type == "RealVal")
@@ -612,15 +612,15 @@ async function evaluateComparison(
                 } else {
                     throw reportError(
                         "Tentou avaliar dois tipos incompativeis: " +
-                        (await evaluate(node.left, env)).type +
+                        (evaluate(node.left, env)).type +
                         " e " +
-                        (await evaluate(node.right, env)).type,
+                        (evaluate(node.right, env)).type,
                         node.line,
                     );
                 }
             case "<=":
-                left = await evaluate(node.left, env);
-                right = await evaluate(node.right, env);
+                left = evaluate(node.left, env);
+                right = evaluate(node.right, env);
                 if (
                     (right.type == "NumberVal" || right.type == "RealVal") &&
                     (left.type == "NumberVal" || left.type == "RealVal")
@@ -630,15 +630,15 @@ async function evaluateComparison(
                 } else {
                     throw reportError(
                         "Tentou avaliar dois tipos incompativeis: " +
-                        (await evaluate(node.left, env)).type +
+                        (evaluate(node.left, env)).type +
                         " e " +
-                        (await evaluate(node.right, env)).type,
+                        (evaluate(node.right, env)).type,
                         node.line,
                     );
                 }
             case ">":
-                left = await evaluate(node.left, env);
-                right = await evaluate(node.right, env);
+                left = evaluate(node.left, env);
+                right = evaluate(node.right, env);
                 if (
                     (right.type == "NumberVal" || right.type == "RealVal") &&
                     (left.type == "NumberVal" || left.type == "RealVal")
@@ -648,15 +648,15 @@ async function evaluateComparison(
                 } else {
                     throw reportError(
                         "Tentou avaliar dois tipos incompativeis: " +
-                        (await evaluate(node.left, env)).type +
+                        (evaluate(node.left, env)).type +
                         " e " +
-                        (await evaluate(node.right, env)).type,
+                        (evaluate(node.right, env)).type,
                         node.line,
                     );
                 }
             case "<":
-                left = await evaluate(node.left, env);
-                right = await evaluate(node.right, env);
+                left = evaluate(node.left, env);
+                right = evaluate(node.right, env);
                 if (
                     (right.type == "NumberVal" || right.type == "RealVal") &&
                     (left.type == "NumberVal" || left.type == "RealVal")
@@ -666,16 +666,16 @@ async function evaluateComparison(
                 } else {
                     throw reportError(
                         "Tentou avaliar dois tipos incompativeis: " +
-                        (await evaluate(node.left, env)).type +
+                        (evaluate(node.left, env)).type +
                         " e " +
-                        (await evaluate(node.right, env)).type,
+                        (evaluate(node.right, env)).type,
                         node.line,
                     );
                 }
 
             case "~=":
-                left = await evaluate(node.left, env);
-                right = await evaluate(node.right, env);
+                left = evaluate(node.left, env);
+                right = evaluate(node.right, env);
                 result.value = left.value != right.value || left.type != right.type;
         }
         return result;
@@ -684,14 +684,14 @@ async function evaluateComparison(
     }
 }
 
-async function evaluateVarDecl(
+function evaluateVarDecl(
     variable: VarDecl,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const value = variable.value
-        ? await evaluate(variable.value, env)
+        ? evaluate(variable.value, env)
         : MK_NULL();
-    const hasValue = variable.value?true:false;
+    const hasValue = variable.value ? true : false;
     let assignedtype = value.type;
     let type = "NullVal" as ValueType;
     let listType = "NullVal" as ValueType;
@@ -766,19 +766,19 @@ async function evaluateVarDecl(
     return value;
 }
 
-async function evaluateVarAssignment(
+function evaluateVarAssignment(
     node: AssignmentExpr,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     if (node.assigne.kind === "AttributeLookup") {
         return evaluateAttributeAssignment(node, env);
     }
 
-    const varname = node.assigne as Identifier;
+    const varname = node.assigne;
 
-    let valueside = await evaluate(node.value, env);
+    const valueside = evaluate(node.value, env);
 
-    const vartype = lookupVar(node, varname.symbol, env)
+    const vartype = lookupVar(node, (varname as Identifier).symbol, env)
         .type as ValueType as string as ValueType;
     let assigneetype = valueside.type as ValueType;
 
@@ -795,7 +795,7 @@ async function evaluateVarAssignment(
         case "RealVal":
             if (assigneetype == "NumberVal") {
                 assigneetype = "RealVal";
-                valueside = valueside as RealVal;
+                valueside.type = "RealVal";
             }
             break;
     }
@@ -813,16 +813,16 @@ async function evaluateVarAssignment(
     }
 }
 
-async function evaluateAttributeAssignment(
+function evaluateAttributeAssignment(
     node: AssignmentExpr,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     const attLookup = node.assigne as AttributeLookup;
     const obj = lookupVar(node, attLookup.symbol, env) as ObjectVal;
     const objEnv = obj.env;
     const varname = attLookup.lookup;
 
-    let valueside = await evaluate(node.value, env);
+    let valueside = evaluate(node.value, env);
 
     const vartype = lookupVar(node, varname, objEnv).type as ValueType as string;
     let assigneetype = valueside.type;
@@ -867,11 +867,11 @@ function evaluateIdentifier(
     return val;
 }
 
-async function evaluateFuncCall(
+function evaluateFuncCall(
     node: FuncCall,
     env: Environment,
     argsEnv?: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     //check if argsEnv was passed
     argsEnv = argsEnv ? argsEnv : env;
 
@@ -901,18 +901,13 @@ async function evaluateFuncCall(
         for (let index = 0; index < args.length; index++) {
             const arg = args[index];
             const passed = passedArgs[index];
-            const pArg = (await evaluate(passed, argsEnv)) as RuntimeVal;
+            const pArg = (evaluate(passed, argsEnv)) as RuntimeVal;
             const passedType = pArg.type;
             if (arg.type == passedType || arg.type == "NullVal") {
                 newEnv.declareVar(arg.identifier, pArg, passedType);
             } else {
                 throw reportError(
-                    "Esperava argumento número " +
-                    (index + 1) +
-                    " como " +
-                    arg.type +
-                    " mas recebi " +
-                    passedType,
+                    `Função ${identifier} esperava argumento número ${(index + 1)} como ${arg.type} mas recebi ${passedType}`,
                     node.line,
                 );
             }
@@ -926,12 +921,12 @@ async function evaluateFuncCall(
     }
 }
 
-async function evaluateBinaryExpr(
+function evaluateBinaryExpr(
     binop: BinaryExpr,
     env: Environment,
-): Promise<RuntimeVal> {
-    const leftHand = await evaluate(binop.left, env);
-    const rightHand = await evaluate(binop.right, env);
+): RuntimeVal {
+    const leftHand = evaluate(binop.left, env);
+    const rightHand = evaluate(binop.right, env);
 
     //needs to match to "NumberVal", "RealVal", "NumericLiteral". How do i do that?
     if (leftHand.type == "NullVal" || rightHand.type == "NullVal") {
@@ -950,7 +945,7 @@ async function evaluateBinaryExpr(
         binop.operator == "ou" ||
         binop.operator == "xou"
     ) {
-        const v = await evaluateLogicalBinaryExpr(
+        const v = evaluateLogicalBinaryExpr(
             leftHand,
             rightHand,
             binop.operator,
@@ -976,7 +971,7 @@ async function evaluateBinaryExpr(
 
         const left = leftHand as RealVal;
         const right = rightHand as RealVal;
-        const v = await evaluateNumericBinaryExpr(left, right, binop.operator);
+        const v = evaluateNumericBinaryExpr(left, right, binop.operator);
 
         let result;
         if (leftHand.type == "NumberVal" || rightHand.type == "NumberVal") {
@@ -1074,10 +1069,10 @@ export function setGlobalEnv(env: Environment) {
     GLOBAL_ENV = env;
 }
 
-async function evaluateProgram(
+function evaluateProgram(
     program: Program,
     env: Environment,
-): Promise<RuntimeVal> {
+): RuntimeVal {
     outputBuffer = "";
     let lastEvaluated: RuntimeVal = {
         type: "NullVal",
@@ -1085,7 +1080,7 @@ async function evaluateProgram(
     } as NullVal;
     GLOBAL_ENV = env;
     for (const statement of program.body) {
-        lastEvaluated = await evaluate(statement, env);
+        lastEvaluated = evaluate(statement, env);
     }
 
     if (outputBuffer != "") {

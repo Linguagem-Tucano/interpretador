@@ -57,6 +57,7 @@ export function setupEnv(env: Environment) {
             v = text.value ? "verdadeiro" : "falso"
         }
         appendOutput(v as string + "\n");
+        flushOutputBuffer();
         return MK_NULL();
     }
     
@@ -77,9 +78,8 @@ export function setupEnv(env: Environment) {
 
     const leia = new Function([],[]);
     leia.call = function(_env: Environment) {
-        flushOutputBuffer();
-        const input = prompt("");
-        return {type:"StringVal",value:input} as RuntimeVal;
+        const input = prompt('')
+        return {type:"StringVal",value:input??''} as RuntimeVal;
     }
     
     const pergunte = new Function([],[arg]);

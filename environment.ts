@@ -32,25 +32,29 @@ export default class Environment {
         if (this.variables.has(varname)) {
             throw `Variável ${varname} já declarada`;
         }
+        
         value.type=type;
+        
         this.variables.set(varname,value);
         return value;
     }
 
     public assignVar(varname:string,value:RuntimeVal):RuntimeVal {
         const env = this.resolve(varname);
-        env.variables.set(varname,value);
+        env.variables.set(varname, value);
         return value;
+        
     }
 
     public resolve(varname:string): Environment {
         if (this.variables.has(varname)) {
             return this
         }
-        if (this.parent==undefined) {
-            throw `Variável ${varname} não existe`;
+        if (this.parent instanceof Environment) {
+            return this.parent.resolve(varname);
         }
-        return this.parent.resolve(varname);
+        console.log(this.parent)
+        throw `Variável ${varname} não existe`;
     }
 
     public lookupVar(varname:string): RuntimeVal {

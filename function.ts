@@ -16,10 +16,9 @@ export class Function implements Callable {
         this.type = type? type : "NullVal";
     }
 
-    public call(env: Environment) {
+    public call(env: Environment):RuntimeVal {
         let lastRes = {} as RuntimeVal;
-        for (let index = 0; index < this.body.length; index++) {
-                const s = this.body[index];    
+        for (const s of this.body) {   
                 if (s.kind=="ReturnExpr") {
                     let result = evaluate((s as ReturnExpr).value,env);
                     if (this.type!="NullVal") {

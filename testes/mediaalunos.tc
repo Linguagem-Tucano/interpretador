@@ -1,0 +1,22 @@
+Saida.escreval("Quantos alunos é preciso receber a nota?")
+caractere nA = Entrada.leia()
+int numAlunos = converta(nA para int)
+
+real[] notas
+
+para (i=0,numAlunos) faca {
+  Saida.escreval("Digite a nota do ".. i.."° aluno:")
+  notas[i] = converta(Entrada.leia() para real)
+}
+
+real media = 0
+int contador = 0
+
+para (nota de notas) faça{
+   contador = contador +1
+   media = media + nota
+}
+
+media = media/contador
+
+Saida.escreval(media)
