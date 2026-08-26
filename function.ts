@@ -16,7 +16,7 @@ export class Function implements Callable {
         this.type = type? type : "NullVal";
     }
 
-    public call(args: RuntimeVal[], env: Environment):RuntimeVal {
+    public call(env: Environment):RuntimeVal {
         let lastRes = {} as RuntimeVal;
         lastRes = evaluate(this.body, env);
         if (lastRes.type=='ReturnVal') {

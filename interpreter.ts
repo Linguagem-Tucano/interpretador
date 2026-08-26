@@ -639,7 +639,7 @@ function evaluateFuncCall(node: FuncCall, env: Environment, argsEnv?: Environmen
     }
 
     try {
-        return func.call(argsList, newEnv);
+        return func.call(newEnv);
     } catch (error) {
         throw reportError(error as string, node.line);
     }
