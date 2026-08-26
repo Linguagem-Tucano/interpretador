@@ -1,54 +1,6 @@
-import { ValueType } from "./values.ts";
+import { ValueType } from './values.ts';
 
-export type nodeType = 
-| "Program"
-| "NumericLiteral"
-| "RealLiteral"
-| "StringLiteral"
-| "ListLiteral"
-| "Identifier"
-| "ListIdentifier"
-| "BinaryExpr"
-| "ComparatorExpr"
-| "AssignmentExpr"
-| "UnaryExpr"
-| "EOL"
-| "Body"
-
-| "Property"
-| "ObjectLiteral"
-
-| "IfStmt"
-| "SwitchStmt"
-
-| "ForStmt"
-| "ForEachStmt"
-
-| "WhileStmt"
-| "UntilStmt"
-
-| "EndScope"
-| "Dot"
-
-| "VarDecl"
-
-| "FuncDecl"
-| "FuncCall"
-| "ReturnExpr"
-| "ArgumentExpr"
-
-| "ConvertExpr"
-
-| "AttributeLookup"
-| "CallLookup"
-
-| "ClassExpr"
-| "ClassAtribute"
-| "ClassConstructor"
-| "ClassFunction"
-
-| "ObjectLiteral"
-| "NewObjectExpr";
+export type nodeType = 'Program' | 'NumericLiteral' | 'RealLiteral' | 'StringLiteral' | 'ListLiteral' | 'Identifier' | 'ListIdentifier' | 'BinaryExpr' | 'ComparatorExpr' | 'AssignmentExpr' | 'UnaryExpr' | 'EOL' | 'Body' | 'Property' | 'ObjectLiteral' | 'IfStmt' | 'SwitchStmt' | 'ForStmt' | 'ForEachStmt' | 'WhileStmt' | 'UntilStmt' | 'EndScope' | 'Dot' | 'VarDecl' | 'FuncDecl' | 'FuncCall' | 'ReturnExpr' | 'ArgumentExpr' | 'ConvertExpr' | 'AttributeLookup' | 'CallLookup' | 'ClassExpr' | 'ClassAtribute' | 'ClassConstructor' | 'ClassFunction' | 'ObjectLiteral' | 'NewObjectExpr' | 'PropertyDecl';
 
 export interface Stmt {
     kind: nodeType;
@@ -56,55 +8,63 @@ export interface Stmt {
 }
 
 export interface Program extends Stmt {
-    kind: "Program";
-    body: Stmt[];
+    kind: 'Program';
+    body: Body;
 }
 
 export interface Body extends Stmt {
-    kind: "Body";
-    body: Stmt[];
+    kind: 'Body';
+    lines: Stmt[];
 }
 
 export interface ClassExpr extends Stmt {
-    kind: "ClassExpr";
+    kind: 'ClassExpr';
     identifier: string;
-    body: Stmt[];
+    body: Body;
     parent?: string; // Nome da classe pai, se houver
 }
 
+// Dentro de ast.ts
+export interface PropertyDecl extends Stmt {
+    kind: 'PropertyDecl';
+    modifier: 'publico' | 'privado';
+    name: string;
+    type: string; // "caractere", "int", etc.
+}
+
 export interface NewObjectExpr extends Stmt {
-    kind: "NewObjectExpr";
+    kind: 'NewObjectExpr';
     class: string;
     args: Expr[];
 }
 
 export interface ObjectLiteral extends Expr {
-    kind: "ObjectLiteral";
+    kind: 'ObjectLiteral';
     className: string;
 }
 
 export interface ClassConstructor extends Stmt {
-    kind: "ClassConstructor";
+    kind: 'ClassConstructor';
     function: FuncDecl;
 }
 
 export interface IfStmt extends Stmt {
-    kind: "IfStmt";
+    kind: 'IfStmt';
     comparison: Expr;
-    body: Stmt[];
-    else?: Stmt[];
+    body: Body;
+    else?: Body;
     elseif?: IfStmt[];
 }
 
 export interface SwitchStmt extends Stmt {
-    kind: "SwitchStmt";
+    kind: 'SwitchStmt';
     value: Expr;
-    cases: Map<Expr, Stmt[]>;
+    cases: Map<Expr, Body>;
 }
 
 export interface ForStmt extends Stmt {
-    kind: "ForStmt";
-    body: Stmt[];
+    kind: 'ForStmt';
+    body: Body;
     variable: Identifier;
     startIndex: Expr;
     endIndex: Expr;
@@ -112,49 +72,48 @@ export interface ForStmt extends Stmt {
 }
 
 export interface ForEachStmt extends Stmt {
-    kind: "ForEachStmt";
-    body: Stmt[];
+    kind: 'ForEachStmt';
+    body: Body;
     variable: Identifier;
     list: Identifier;
 }
 
 export interface WhileStmt extends Stmt {
-    kind: "WhileStmt";
-    body: Stmt[];
+    kind: 'WhileStmt';
+    body: Body;
     comparison: Expr;
 }
 
 export interface UntilStmt extends Stmt {
-    kind: "UntilStmt";
-    body: Stmt[];
+    kind: 'UntilStmt';
+    body: Body;
     comparison: Expr;
 }
 
-
 export interface VarDecl extends Stmt {
-    kind: "VarDecl";
+    kind: 'VarDecl';
     identifier: string;
-    type:string;
+    type: string;
     value?: Expr;
-    global:boolean;
+    global: boolean;
 }
 
 export interface FuncDecl extends Stmt {
-    kind: "FuncDecl";
+    kind: 'FuncDecl';
     identifier: string;
-    type:ValueType;
-    args:ArgumentExpr[];
-    body:Stmt[];
+    type: ValueType;
+    args: ArgumentExpr[];
+    body: Body;
 }
 
 export interface FuncCall extends Stmt {
-    kind: "FuncCall";
+    kind: 'FuncCall';
     identifier: string;
-    args:Expr[];
+    args: Expr[];
 }
 
 export interface ArgumentExpr extends Expr {
-    kind: "ArgumentExpr";
+    kind: 'ArgumentExpr';
     identifier: string;
     type?: string;
 }
@@ -162,90 +121,90 @@ export interface ArgumentExpr extends Expr {
 export interface Expr extends Stmt {}
 
 export interface UnaryExpr extends Expr {
-    kind: "UnaryExpr";
+    kind: 'UnaryExpr';
     operator: string;
     value: Expr;
 }
 
 export interface ConvertExpr extends Expr {
-    kind: "ConvertExpr";
+    kind: 'ConvertExpr';
     value: Expr;
     type: ValueType;
 }
 
 export interface BinaryExpr extends Expr {
-    kind: "BinaryExpr";
+    kind: 'BinaryExpr';
     left: Expr;
     right: Expr;
     operator: string;
 }
 
 export interface ComparatorExpr extends Expr {
-    kind: "ComparatorExpr";
+    kind: 'ComparatorExpr';
     left: Expr;
     right: Expr;
     operator: string;
 }
 
 export interface Identifier extends Expr {
-    kind: "Identifier";
+    kind: 'Identifier';
     symbol: string;
 }
 
 export interface AttributeLookup extends Expr {
-    kind: "AttributeLookup";
+    kind: 'AttributeLookup';
     symbol: string;
     lookup: string;
 }
 
 export interface CallLookup extends Expr {
-    kind: "CallLookup";
+    kind: 'CallLookup';
     symbol: string;
     call: string;
     args: Expr[];
 }
 
 export interface StringLiteral extends Expr {
-    kind: "StringLiteral";
+    kind: 'StringLiteral';
     value: string;
 }
 
 export interface AssignmentExpr extends Expr {
-    kind: "AssignmentExpr";
+    kind: 'AssignmentExpr';
     assigne: AttributeLookup | ListIdentifier | Identifier;
     value: Expr;
 }
 
 export interface NumericLiteral extends Expr {
-    kind: "NumericLiteral";
+    kind: 'NumericLiteral';
     value: number;
 }
 
 export interface RealLiteral extends Expr {
-    kind: "RealLiteral";
+    kind: 'RealLiteral';
     value: number;
 }
 
 export interface ReturnExpr extends Expr {
-    kind: "ReturnExpr";
+    kind: 'ReturnExpr';
     value: Expr;
 }
 
 export interface ListLiteral extends Expr {
-    kind: "ListLiteral";
+    kind: 'ListLiteral';
     values: Expr[];
 }
 
 export interface ListIdentifier extends Expr {
-    kind:"ListIdentifier";
-    symbol:string;
-    lookup:Stmt[];
+    kind: 'ListIdentifier';
+    symbol: string;
+    lookup: Stmt[];
 }
 
 export interface EndOfLine extends Expr {
-    kind: "EOL";
+    kind: 'EOL';
 }
 
 export interface Dot extends Expr {
-    kind: "Dot";
+    kind: 'Dot';
 }

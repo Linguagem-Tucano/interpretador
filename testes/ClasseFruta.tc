@@ -1,0 +1,15 @@
+classe Fruta {
+  caractere nome
+
+  funcao construtor(n:caractere) {
+    isso.nome = n
+    retorna isso
+  }
+  funcao falarNome() {
+    Saida.escreval(isso.nome) --escreva na tela o nome dessa fruta
+  }
+}
+
+var uva = novo Fruta("uva") --criar um objeto fruta com nome uva
+var melao = novo Fruta("melao") --criar um objeto fruta com nome melao
+melao.falarNome() --o melao vai escrever "melao" na tela pois é essa instancia que está executando.

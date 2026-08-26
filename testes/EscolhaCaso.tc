@@ -1,4 +1,4 @@
-var a = 1
+var a = converta(Entrada.leia() para int)
 escolha a {
     caso 1:
         Saida.escreval("Oi ".. a)

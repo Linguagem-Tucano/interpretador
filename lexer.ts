@@ -71,94 +71,61 @@ export enum TokenType {
     Caso,
 }
 const reservedWordsObj = {
-    "var": TokenType.Var,
-    "int": TokenType.Int,
-    "caractere": TokenType.Caractere,
-    "real": TokenType.RealWord,
-    "logico": TokenType.Logico,
-    "global": TokenType.Global,
+    var: TokenType.Var,
+    int: TokenType.Int,
+    caractere: TokenType.Caractere,
+    real: TokenType.RealWord,
+    logico: TokenType.Logico,
+    global: TokenType.Global,
 
-    "se": TokenType.Se,
-    "senao": TokenType.Senao,
+    se: TokenType.Se,
+    senao: TokenType.Senao,
 
-    "para": TokenType.Para,
-    "de": TokenType.De,
-    "faca": TokenType.Faca,
-    "faça": TokenType.Faca,
+    para: TokenType.Para,
+    de: TokenType.De,
+    faca: TokenType.Faca,
+    faça: TokenType.Faca,
 
-    "enquanto": TokenType.Enquanto,
-    "repita": TokenType.Repita,
-    "ate": TokenType.Ate,
-    "até": TokenType.Ate,
+    enquanto: TokenType.Enquanto,
+    repita: TokenType.Repita,
+    ate: TokenType.Ate,
+    até: TokenType.Ate,
 
-    "funcao": TokenType.Funcao,
-    "funçao": TokenType.Funcao,
-    "funcão": TokenType.Funcao,
-    "função": TokenType.Funcao,
-    "retorna": TokenType.Retorna,
+    funcao: TokenType.Funcao,
+    funçao: TokenType.Funcao,
+    funcão: TokenType.Funcao,
+    função: TokenType.Funcao,
+    retorna: TokenType.Retorna,
 
-    /*"classe": TokenType.Classe,
-    "construtor": TokenType.Construtor,
-    "privado": TokenType.Privado,
-    "protegido": TokenType.Protegido,
-    "publico": TokenType.Publico,
-    "novo": TokenType.Novo,*/
+    classe: TokenType.Classe,
+    // "construtor": TokenType.Construtor,
+    // "privado": TokenType.Privado,
+    // "protegido": TokenType.Protegido,
+    // "publico": TokenType.Publico,
+    novo: TokenType.Novo,
 
-    "converta": TokenType.Converter,
-    "extende": TokenType.Extende,
+    converta: TokenType.Converter,
+    extende: TokenType.Extende,
 
-    "escolha": TokenType.Escolha,
-    "caso": TokenType.Caso,
+    escolha: TokenType.Escolha,
+    caso: TokenType.Caso,
 };
 
-export const reservedWords = new Map<string, TokenType>(
-    Object.entries(reservedWordsObj),
-);
+export const reservedWords = new Map<string, TokenType>(Object.entries(reservedWordsObj));
 
-const binOps = {
-    "+": TokenType.Mais,
-    "-": TokenType.Menos,
-    "*": TokenType.Multiplicacao,
-    "/": TokenType.Divisao,
-    "%": TokenType.Modulo,
-    "//": TokenType.DivisaoInteira,
-    "^": TokenType.Exponenciacao,
-    "..": TokenType.Concatenacao,
-};
+const binOps = { '+': TokenType.Mais, '-': TokenType.Menos, '*': TokenType.Multiplicacao, '/': TokenType.Divisao, '%': TokenType.Modulo, '//': TokenType.DivisaoInteira, '^': TokenType.Exponenciacao, '..': TokenType.Concatenacao };
 
 const binaryOperators = new Map<string, TokenType>(Object.entries(binOps));
 
-const comparatorOperators = [
-    "==",
-    ">=",
-    "<=",
-    ">",
-    "<",
-    "~=",
-];
+const comparatorOperators = ['==', '>=', '<=', '>', '<', '~='];
 
-const assign = "=";
+const assign = '=';
 
-const endOfLine = [
-    ";",
-    "\n",
-];
+const endOfLine = [';', '\n'];
 
-const openAndClose: { [id: string]: TokenType } = {
-    "(": TokenType.LParen,
-    ")": TokenType.RParen,
-    "[": TokenType.LColch,
-    "]": TokenType.RColch,
-    "{": TokenType.LChave,
-    "}": TokenType.RChave,
-    ":": TokenType.DoisPontos,
-    ",": TokenType.Virgula,
-};
+const openAndClose: { [id: string]: TokenType } = { '(': TokenType.LParen, ')': TokenType.RParen, '[': TokenType.LColch, ']': TokenType.RColch, '{': TokenType.LChave, '}': TokenType.RChave, ':': TokenType.DoisPontos, ',': TokenType.Virgula };
 
-const unaryOperators: { [id: string]: TokenType } = {
-    "~": TokenType.Nao,
-    "-": TokenType.Menos,
-};
+const unaryOperators: { [id: string]: TokenType } = { '~': TokenType.Nao, '-': TokenType.Menos };
 
 function isBinaryOperator(str: string): TokenType | undefined {
     return binaryOperators.get(str);
@@ -169,7 +136,7 @@ function isEndOfLine(str: string) {
 }
 
 function isAssign(str: string): boolean {
-    return (str == assign);
+    return str == assign;
 }
 
 //I wanna rework this function to be in line with most lexers out there, I want it to take the array as a reference and make changes to it,
@@ -205,15 +172,15 @@ function isNumber(str: string): boolean {
 }
 
 function isComentario(str: string): boolean {
-    return "--".includes(str);
+    return '--'.includes(str);
 }
 
 function isPonto(str: string): boolean {
-    return ".".includes(str);
+    return '.'.includes(str);
 }
 
 function isReal(str: string): boolean {
-    return isNumber(str) || (str?str.includes("."):false);
+    return isNumber(str) || (str ? str.includes('.') : false);
 }
 
 function isAspas(str: string): boolean {
@@ -240,29 +207,29 @@ function peek(): string {
     return src[1];
 }
 
-function shift(n:number) {
-    for (let i = 0; i<n; i++) { src.shift(); }
+function shift(n: number) {
+    for (let i = 0; i < n; i++) {
+        src.shift();
+    }
 }
 
 export let src = [] as string[];
 export let tokens = new Array<Token>();
 
 export function tokenize(sourceCode: string): Token[] {
-    src = sourceCode.split("");
+    src = sourceCode.split('');
     tokens = [];
     let lineNumber = 1;
 
     //run til end of source code
     while (src.length > 0) {
         let testStr = src[0];
-        if (testStr == "/") {
+        if (testStr == '/') {
             testStr += src[1];
 
             const binOp = isBinaryOperator(src[0]);
             if (isBinaryOperator(testStr)) {
-                tokens.push(
-                    token(testStr, TokenType.DivisaoInteira, lineNumber),
-                );
+                tokens.push(token(testStr, TokenType.DivisaoInteira, lineNumber));
                 for (let i = 0; i < testStr.length; i++) {
                     src.shift();
                 }
@@ -287,7 +254,7 @@ export function tokenize(sourceCode: string): Token[] {
                 continue;
             }
         }
-        if (testStr == "-") {
+        if (testStr == '-') {
             testStr += src[1];
             if (isComentario(testStr)) {
                 while (!isEndOfLine(src[0]) && src.length > 0) {
@@ -300,7 +267,6 @@ export function tokenize(sourceCode: string): Token[] {
                 } else {
                     break;
                 }
-
             }
         }
 
@@ -332,7 +298,7 @@ export function tokenize(sourceCode: string): Token[] {
             continue;
         }
         if (isEndOfLine(src[0])) {
-            if (match("\n")) lineNumber++;
+            if (match('\n')) lineNumber++;
             tokens.push(token(src[0], TokenType.EOL, lineNumber));
             src.shift();
             continue;
@@ -346,29 +312,26 @@ export function tokenize(sourceCode: string): Token[] {
 
         //deal with integer numbers and real numbers
         if (isReal(src[0])) {
-            let number = "";
+            let number = '';
             while (src.length > 0 && isReal(src[0])) {
                 number += src[0];
                 src.shift();
             }
             let ttype = TokenType.Number;
-            if (number.includes(".")) ttype = TokenType.Real;
+            if (number.includes('.')) ttype = TokenType.Real;
             tokens.push(token(number, ttype, lineNumber));
             continue;
         }
 
         if (isAspas(src[0])) {
-            let text = "";
+            let text = '';
             src.shift(); //eat the "
             while (src.length > 0 && !isAspas(src[0])) {
                 text += src[0];
                 src.shift();
             }
             if (src.length == 0) {
-                throw {
-                    text: "Aspas não fechadas",
-                    line: lineNumber,
-                } as lexerError;
+                throw { text: 'Aspas não fechadas', line: lineNumber } as lexerError;
             }
             src.shift(); //eat the last "
             tokens.push(token(text, TokenType.StringLiteral, lineNumber));
@@ -377,7 +340,7 @@ export function tokenize(sourceCode: string): Token[] {
 
         //deal with string literal
         if (isLetter(src[0])) {
-            let text = "";
+            let text = '';
             while (src.length > 0 && isLetter(src[0])) {
                 text += src[0];
                 src.shift();
@@ -385,14 +348,14 @@ export function tokenize(sourceCode: string): Token[] {
             if (isReservedWord(text)) {
                 const type = reservedWords.get(text) as TokenType;
                 tokens.push(token(text, type, lineNumber));
-            } else if (text != "") {
+            } else if (text != '') {
                 tokens.push(token(text, TokenType.Identifier, lineNumber));
             }
             continue;
         }
     }
 
-    tokens.push(token("EOF", TokenType.EOF, lineNumber));
+    tokens.push(token('EOF', TokenType.EOF, lineNumber));
     return tokens;
 }
 

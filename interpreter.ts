@@ -1,309 +1,190 @@
 // deno-lint-ignore-file no-case-declarations
-import {
-    BooleanVal,
-    ListVal,
-    MK_NULL,
-    NullVal,
-    NumberVal,
-    ObjectVal,
-    RealVal,
-    RuntimeVal,
-    StringVal,
-    ValueType,
-} from "./values.ts";
-import {
-    ArgumentExpr,
-    AssignmentExpr,
-    AttributeLookup,
-    BinaryExpr,
-    CallLookup,
-    ClassExpr,
-    ComparatorExpr,
-    ConvertExpr,
-    ForEachStmt,
-    ForStmt,
-    FuncCall,
-    FuncDecl,
-    Identifier,
-    IfStmt,
-    ListIdentifier,
-    ListLiteral,
-    NewObjectExpr,
-    NumericLiteral,
-    ObjectLiteral,
-    Program,
-    RealLiteral,
-    ReturnExpr,
-    Stmt,
-    StringLiteral,
-    SwitchStmt,
-    UnaryExpr,
-    UntilStmt,
-    VarDecl,
-    WhileStmt,
-} from "./ast.ts";
-import Environment from "./environment.ts";
-import { reportError } from "./main.ts";
-import { Function } from "./function.ts";
+import { BooleanVal, ListVal, MK_NULL, NullVal, NumberVal, ObjectVal, RealVal, ReturnVal, RuntimeVal, StringVal, ValueType } from './values.ts';
+import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, Body, CallLookup, ClassExpr, ComparatorExpr, ConvertExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, SwitchStmt, UnaryExpr, UntilStmt, VarDecl, WhileStmt } from './ast.ts';
+import Environment from './environment.ts';
+import { reportError } from './main.ts';
+import { Function } from './function.ts';
 
-export function evaluate(
-    astNode: Stmt,
-    env: Environment,
-): RuntimeVal {
+export function evaluate(astNode: Stmt, env: Environment): RuntimeVal {
     switch (astNode.kind) {
-        case "NumericLiteral":
-            return {
-                value: (astNode as NumericLiteral).value,
-                type: "NumberVal",
-            } as NumberVal;
-        case "StringLiteral":
-            return {
-                value: (astNode as StringLiteral).value,
-                type: "StringVal",
-            } as StringVal;
-        case "RealLiteral":
-            return {
-                value: (astNode as RealLiteral).value,
-                type: "RealVal",
-            } as RealVal;
-        case "ObjectLiteral":
-            return {
-                className: (astNode as ObjectLiteral).className,
-                value: "Objeto da classe " + (astNode as ObjectLiteral).className,
-                env,
-                type: "ObjectVal",
-            } as ObjectVal;
-        case "ListLiteral":
+        case 'NumericLiteral':
+            return { value: (astNode as NumericLiteral).value, type: 'NumberVal' } as NumberVal;
+        case 'StringLiteral':
+            return { value: (astNode as StringLiteral).value, type: 'StringVal' } as StringVal;
+        case 'RealLiteral':
+            return { value: (astNode as RealLiteral).value, type: 'RealVal' } as RealVal;
+        case 'ObjectLiteral':
+            return { className: (astNode as ObjectLiteral).className, value: 'Objeto da classe ' + (astNode as ObjectLiteral).className, env, type: 'ObjectVal' } as ObjectVal;
+        case 'ListLiteral':
             return evaluateListLiteral(astNode as ListLiteral, env);
-        case "ListIdentifier":
+        case 'ListIdentifier':
             return evaluateListIdentifier(astNode as ListIdentifier, env);
-        case "BinaryExpr":
+        case 'BinaryExpr':
             return evaluateBinaryExpr(astNode as BinaryExpr, env);
-        case "Identifier":
+        case 'Identifier':
             return evaluateIdentifier(astNode as Identifier, env);
-        case "Program":
+        case 'Program':
             return evaluateProgram(astNode as Program, env);
-        case "VarDecl":
+        case 'VarDecl':
             return evaluateVarDecl(astNode as VarDecl, env);
-        case "AssignmentExpr":
+        case 'AssignmentExpr':
             return evaluateVarAssignment(astNode as AssignmentExpr, env);
-        case "ComparatorExpr":
+        case 'ComparatorExpr':
             return evaluateComparison(astNode as ComparatorExpr, env);
-        case "IfStmt":
+        case 'IfStmt':
             return evaluateIfStmt(astNode as IfStmt, env);
-        case "ForStmt":
+        case 'ForStmt':
             return evaluateForStmt(astNode as ForStmt, env);
-        case "ForEachStmt":
+        case 'ForEachStmt':
             return evaluateForEachStmt(astNode as ForEachStmt, env);
-        case "WhileStmt":
+        case 'WhileStmt':
             return evaluateWhileStmt(astNode as WhileStmt, env);
-        case "UntilStmt":
+        case 'UntilStmt':
             return evaluateUntilStmt(astNode as UntilStmt, env);
-        case "FuncDecl":
+        case 'FuncDecl':
             return evaluateFuncDecl(astNode as FuncDecl, env);
-        case "FuncCall":
+        case 'FuncCall':
             return evaluateFuncCall(astNode as FuncCall, env);
-        case "ClassExpr":
+        case 'ClassExpr':
             return evaluateClassDecl(astNode as ClassExpr, env);
-        case "ReturnExpr":
+        case 'ReturnExpr':
             return evaluateReturnExpr(astNode as ReturnExpr, env);
-        case "NewObjectExpr":
+        case 'NewObjectExpr':
             return evaluateNewObjectExpr(astNode as NewObjectExpr, env);
-        case "AttributeLookup":
+        case 'AttributeLookup':
             return evaluateAttributeLookup(astNode as AttributeLookup, env);
-        case "CallLookup":
+        case 'CallLookup':
             return evaluateCallLookup(astNode as CallLookup, env);
-        case "ConvertExpr":
+        case 'ConvertExpr':
             return evaluateConvertExpr(astNode as ConvertExpr, env);
-        case "UnaryExpr":
+        case 'UnaryExpr':
             return evaluateUnaryExpr(astNode as UnaryExpr, env);
-        case "EOL":
+        case 'EOL':
             return MK_NULL();
-        case "SwitchStmt":
+        case 'SwitchStmt':
             return evaluateSwitchStmt(astNode as SwitchStmt, env);
+        case 'Body':
+            return evaluateBlock(astNode as Body, env);
         default:
-            throw reportError(
-                "Tipo de nó desconhecido: " + astNode.kind,
-                astNode.line,
-            );
+            throw reportError('Tipo de nó desconhecido: ' + astNode.kind, astNode.line);
     }
 }
 
-function evaluateSwitchStmt(
-    node: SwitchStmt,
-    env: Environment,
-): RuntimeVal {
-    const mapaResolvido = new Map<string, Stmt[]>();
+function evaluateBlock(block: Body, env: Environment): RuntimeVal {
+    let result: RuntimeVal = MK_NULL();
 
-    for (const [chave, valor] of node.cases) {
-        mapaResolvido.set((evaluate(chave, env)).value, valor);
+    for (const stmt of block.lines) {
+        result = evaluate(stmt, env);
+
+        if (result.type === 'ReturnVal') {
+            return result; // Bubbles up!
+        }
     }
 
-    const mestre = (evaluate(node.value, env)).value;
+    return result;
+}
 
-    const body = mapaResolvido.get(mestre) ?? ([] as Stmt[]);
+function evaluateSwitchStmt(node: SwitchStmt, env: Environment): RuntimeVal {
+    const mapaResolvido = new Map<string, Body>();
+
+    for (const [chave, valor] of node.cases) {
+        mapaResolvido.set(evaluate(chave, env).value, valor);
+    }
+
+    const mestre = evaluate(node.value, env).value;
+
+    const body = mapaResolvido.get(mestre) ?? ({kind: 'Body', lines: [], line: node.line} as Body);
 
     const newEnv = new Environment(env);
 
-    let ending = {} as RuntimeVal;
-
-    //console.log(mestre);
-    //console.log(mapaResolvido);
-    //console.log(body);
-
-    for (let index = 0; index < body.length; index++) {
-        const s = body[index];
-        ending = evaluate(s, newEnv);
-    }
-
-    return ending;
+    return evaluateBlock(body, newEnv);
 }
 
-function evaluateUnaryExpr(
-    node: UnaryExpr,
-    env: Environment,
-): RuntimeVal {
+function evaluateUnaryExpr(node: UnaryExpr, env: Environment): RuntimeVal {
     switch (node.operator) {
-        case "nao":
-            const nope = (evaluate(node.value, env)) as RuntimeVal;
-            if (nope.type != "BooleanVal") {
-                throw reportError("Tentou negar um valor não booleano", node.line);
+        case 'nao':
+            const nope = evaluate(node.value, env) as RuntimeVal;
+            if (nope.type != 'BooleanVal') {
+                throw reportError('Tentou negar um valor não booleano', node.line);
             }
-            
-            return {...nope, value:!nope.value};
-        case "-":
+
+            return { ...nope, value: !nope.value };
+        case '-':
             const val = evaluate(node.value, env);
-            if (val.type != "NumberVal" && val.type != "RealVal") {
-                throw reportError("Tentou negativar um valor não numérico", node.line);
+            if (val.type != 'NumberVal' && val.type != 'RealVal') {
+                throw reportError('Tentou negativar um valor não numérico', node.line);
             }
             val.value = -1 * val.value;
             return val;
         default:
-            throw reportError(
-                "Operador unário desconhecido: " + node.operator,
-                node.line,
-            );
+            throw reportError('Operador unário desconhecido: ' + node.operator, node.line);
     }
 }
 
-function evaluateConvertExpr(
-    node: ConvertExpr,
-    env: Environment,
-): RuntimeVal {
+function evaluateConvertExpr(node: ConvertExpr, env: Environment): RuntimeVal {
     const value = evaluate(node.value, env);
     const firstType = value.type as ValueType;
     const desiredType = node.type as ValueType;
 
     switch (desiredType) {
-        case "StringVal":
-            if (firstType == "NumberVal") {
-                return {
-                    type: "StringVal",
-                    value: value.value.toString(),
-                } as StringVal;
-            } else if (firstType == "RealVal") {
-                return {
-                    type: "StringVal",
-                    value: value.value.toFixed(2),
-                } as StringVal;
-            } else if (firstType == "BooleanVal") {
-                return {
-                    type: "StringVal",
-                    value: value.value ? "verdadeiro" : "falso",
-                } as StringVal;
-            } else if (firstType == "ListVal") {
+        case 'StringVal':
+            if (firstType == 'NumberVal') {
+                return { type: 'StringVal', value: value.value.toString() } as StringVal;
+            } else if (firstType == 'RealVal') {
+                return { type: 'StringVal', value: value.value.toFixed(2) } as StringVal;
+            } else if (firstType == 'BooleanVal') {
+                return { type: 'StringVal', value: value.value ? 'verdadeiro' : 'falso' } as StringVal;
+            } else if (firstType == 'ListVal') {
                 const list = value as ListVal;
-                const strList = list.value.map((item) => item.value).join(", ");
-                return { type: "StringVal", value: strList } as StringVal;
+                const strList = list.value.map((item) => item.value).join(', ');
+                return { type: 'StringVal', value: strList } as StringVal;
             } else {
-                throw reportError(
-                    "Não é possível converter " + firstType + " para caractere.",
-                    node.line,
-                );
+                throw reportError('Não é possível converter ' + firstType + ' para caractere.', node.line);
             }
-        case "NumberVal":
-            if (firstType == "StringVal") {
+        case 'NumberVal':
+            if (firstType == 'StringVal') {
                 const num = parseInt(value.value, 10);
                 if (isNaN(num)) {
-                    throw reportError(
-                        "Não é possível converter '" + value.value + "' para número.",
-                        node.line,
-                    );
+                    throw reportError("Não é possível converter '" + value.value + "' para número.", node.line);
                 }
-                return { type: "NumberVal", value: num } as NumberVal;
-            } else if (firstType == "RealVal") {
-                return {
-                    type: "NumberVal",
-                    value: Math.floor((value as RealVal).value),
-                } as NumberVal;
-            } else if (firstType == "BooleanVal") {
-                return {
-                    type: "NumberVal",
-                    value: value.value ? 1 : 0,
-                } as NumberVal;
+                return { type: 'NumberVal', value: num } as NumberVal;
+            } else if (firstType == 'RealVal') {
+                return { type: 'NumberVal', value: Math.floor((value as RealVal).value) } as NumberVal;
+            } else if (firstType == 'BooleanVal') {
+                return { type: 'NumberVal', value: value.value ? 1 : 0 } as NumberVal;
             } else {
-                throw reportError(
-                    "Não é possível converter " + firstType + " para inteiro.",
-                    node.line,
-                );
+                throw reportError('Não é possível converter ' + firstType + ' para inteiro.', node.line);
             }
-        case "RealVal":
-            if (firstType == "StringVal") {
+        case 'RealVal':
+            if (firstType == 'StringVal') {
                 const num = parseFloat(value.value);
                 if (isNaN(num)) {
-                    throw reportError(
-                        "Não é possível converter '" + value.value + "' para real.",
-                        node.line,
-                    );
+                    throw reportError("Não é possível converter '" + value.value + "' para real.", node.line);
                 }
-                return { type: "RealVal", value: num } as RealVal;
-            } else if (firstType == "NumberVal") {
-                return { type: "RealVal", value: value.value } as RealVal;
-            } else if (firstType == "BooleanVal") {
-                return {
-                    type: "RealVal",
-                    value: value.value ? 1.0 : 0.0,
-                } as RealVal;
+                return { type: 'RealVal', value: num } as RealVal;
+            } else if (firstType == 'NumberVal') {
+                return { type: 'RealVal', value: value.value } as RealVal;
+            } else if (firstType == 'BooleanVal') {
+                return { type: 'RealVal', value: value.value ? 1.0 : 0.0 } as RealVal;
             } else {
-                throw reportError(
-                    "Não é possível converter " + firstType + " para real.",
-                    node.line,
-                );
+                throw reportError('Não é possível converter ' + firstType + ' para real.', node.line);
             }
-        case "BooleanVal":
-            if (firstType == "StringVal") {
-                return {
-                    type: "BooleanVal",
-                    value: value.value == "verdadeiro" ? true : false,
-                } as BooleanVal;
-            } else if (firstType == "NumberVal") {
-                return {
-                    type: "BooleanVal",
-                    value: value.value > 0 ? true : false,
-                } as BooleanVal;
-            } else if (firstType == "RealVal") {
-                return {
-                    type: "BooleanVal",
-                    value: value.value > 0 ? true : false,
-                } as BooleanVal;
+        case 'BooleanVal':
+            if (firstType == 'StringVal') {
+                return { type: 'BooleanVal', value: value.value == 'verdadeiro' ? true : false } as BooleanVal;
+            } else if (firstType == 'NumberVal') {
+                return { type: 'BooleanVal', value: value.value > 0 ? true : false } as BooleanVal;
+            } else if (firstType == 'RealVal') {
+                return { type: 'BooleanVal', value: value.value > 0 ? true : false } as BooleanVal;
             } else {
-                throw reportError(
-                    "Não é possível converter " + firstType + " para lógico.",
-                    node.line,
-                );
+                throw reportError('Não é possível converter ' + firstType + ' para lógico.', node.line);
             }
         default:
-            throw reportError(
-                "Tipo de conversão desconhecido: " + desiredType,
-                node.line,
-            );
+            throw reportError('Tipo de conversão desconhecido: ' + desiredType, node.line);
     }
 }
 
-function evaluateAttributeLookup(
-    node: AttributeLookup,
-    env: Environment,
-): RuntimeVal {
+function evaluateAttributeLookup(node: AttributeLookup, env: Environment): RuntimeVal {
     const obj = lookupVar(node, node.symbol, env) as ObjectVal;
     const objEnv = obj.env;
     //const ret = evaluate(node.lookup, objEnv); //descobri
@@ -312,27 +193,16 @@ function evaluateAttributeLookup(
     return ret;
 }
 
-function evaluateCallLookup(
-    node: CallLookup,
-    env: Environment,
-): RuntimeVal {
+function evaluateCallLookup(node: CallLookup, env: Environment): RuntimeVal {
     const obj = lookupVar(node, node.symbol, env) as ObjectVal;
     const objEnv = obj.env;
 
-    const c = {
-        identifier: node.call,
-        args: node.args,
-        kind: "FuncCall",
-        line: node.line,
-    } as FuncCall;
+    const c = { identifier: node.call, args: node.args, kind: 'FuncCall', line: node.line } as FuncCall;
     const ret = evaluateFuncCall(c, objEnv, env); //para ele fazer lookup no ambiente normal.
     return ret;
 }
 
-function evaluateNewObjectExpr(
-    node: NewObjectExpr,
-    env: Environment,
-): RuntimeVal {
+function evaluateNewObjectExpr(node: NewObjectExpr, env: Environment): RuntimeVal {
     const nodeClass = env.resolveClass(node.class);
 
     const _parent = nodeClass.parent;
@@ -342,25 +212,14 @@ function evaluateNewObjectExpr(
 
     const objectEnv = new Environment(pEnv);
 
-    objectEnv.declareVar(
-        "isso",
-        {
-            type: "ObjectVal",
-            value: "Objeto da classe " + node.class,
-            env: objectEnv,
-        } as ObjectVal,
-        "ObjectVal",
-    );
+    objectEnv.declareVar('isso', { type: 'ObjectVal', value: 'Objeto da classe ' + node.class, env: objectEnv } as ObjectVal, 'ObjectVal');
 
-    for (let i = 0; i < body.length; i++) {
-        const stmt = body[i];
-        evaluate(stmt, objectEnv);
-    }
+    evaluateBlock(body, objectEnv);
 
     const args = node.args;
-    const identifier = "construtor";
+    const identifier = 'construtor';
 
-    const call = { kind: "FuncCall", args, identifier } as FuncCall;
+    const call = { kind: 'FuncCall', args, identifier } as FuncCall;
     //console.log(objectEnv);
     return evaluateFuncCall(call, objectEnv);
 }
@@ -371,56 +230,49 @@ function evaluateClassDecl(node: ClassExpr, env: Environment): RuntimeVal {
     return MK_NULL();
 }
 
-function evaluateWhileStmt(
-    node: WhileStmt,
-    env: Environment,
-): RuntimeVal {
+function evaluateWhileStmt(node: WhileStmt, env: Environment): RuntimeVal {
     const comparison = node.comparison;
     const newEnv = new Environment(env);
 
-    let evaluated = (evaluate(comparison, newEnv)) as BooleanVal;
-
     const body = node.body;
 
-    let ending = {} as RuntimeVal;
+    let result = {} as RuntimeVal;
 
-    while (evaluated.type == "BooleanVal" && evaluated.value == true) {
-        for (let index = 0; index < body.length; index++) {
-            const s = body[index];
-            ending = evaluate(s, newEnv);
-        }
-        evaluated = (evaluate(comparison, newEnv)) as BooleanVal;
+    while (true) {
+        const condition = evaluate(comparison, newEnv) as BooleanVal;
+        if (!condition.value) break;
+
+        result = evaluateBlock(body, newEnv);
+
+        if (result.type == 'ReturnVal') return result;
+        // adicionar "sair" e "pular"
     }
-    return ending;
+
+    return result;
 }
 
-function evaluateUntilStmt(
-    node: UntilStmt,
-    env: Environment,
-): RuntimeVal {
+function evaluateUntilStmt(node: UntilStmt, env: Environment): RuntimeVal {
     const comparison = node.comparison;
     const newEnv = new Environment(env);
 
-    let evaluated = (evaluate(comparison, newEnv)) as BooleanVal;
-
     const body = node.body;
 
-    let ending = {} as RuntimeVal;
+    let result = {} as RuntimeVal;
 
-    while (evaluated.type == "BooleanVal" && evaluated.value == false) {
-        for (let index = 0; index < body.length; index++) {
-            const s = body[index];
-            ending = evaluate(s, newEnv);
-        }
-        evaluated = (evaluate(comparison, newEnv)) as BooleanVal;
+    while (true) {
+        const condition = evaluate(comparison, newEnv) as BooleanVal;
+        if (condition.value) break;
+
+        result = evaluateBlock(body, newEnv);
+
+        if (result.type == 'ReturnVal') return result;
+        // adicionar "sair" e "pular"
     }
-    return ending;
+
+    return result;
 }
 
-function evaluateListIdentifier(
-    node: ListIdentifier,
-    env: Environment,
-): RuntimeVal {
+function evaluateListIdentifier(node: ListIdentifier, env: Environment): RuntimeVal {
     const symbol = node.symbol;
     if (env.hasVar(symbol)) {
         let list = lookupVar(node, symbol, env) as ListVal;
@@ -428,27 +280,21 @@ function evaluateListIdentifier(
         let curr = 0;
         while (i > 0) {
             i--;
-            const smallLookup = (evaluate(node.lookup[curr], env)) as NumberVal;
-            if (list.listType !== "ListVal") {
-                throw reportError(
-                    "Tentou buscar um índice em uma variável que não é lista",
-                    node.line,
-                );
+            const smallLookup = evaluate(node.lookup[curr], env) as NumberVal;
+            if (list.listType !== 'ListVal') {
+                throw reportError('Tentou buscar um índice em uma variável que não é lista', node.line);
             }
             list = list.value[smallLookup.value] as ListVal;
             curr++;
         }
-        const lookup = (evaluate(node.lookup[curr], env)) as NumberVal;
+        const lookup = evaluate(node.lookup[curr], env) as NumberVal;
         return list.value[lookup.value];
     } else {
-        throw reportError("Lista não existe", node.line);
+        throw reportError('Lista não existe', node.line);
     }
 }
 
-function evaluateListLiteral(
-    node: ListLiteral,
-    env: Environment,
-): RuntimeVal {
+function evaluateListLiteral(node: ListLiteral, env: Environment): RuntimeVal {
     const values = node.values;
     let type = null;
     const list = [] as RuntimeVal[];
@@ -461,19 +307,16 @@ function evaluateListLiteral(
         }
 
         if (type != v.type) {
-            throw reportError("Tipo inconsistente de dados na lista.", node.line);
+            throw reportError('Tipo inconsistente de dados na lista.', node.line);
         }
 
         list.push(v);
     }
-    return { type: "ListVal", value: list, listType: type } as ListVal;
+    return { type: 'ListVal', value: list, listType: type } as ListVal;
 }
 
-function evaluateReturnExpr(
-    node: ReturnExpr,
-    env: Environment,
-): RuntimeVal {
-    return evaluate(node.value, env);
+function evaluateReturnExpr(node: ReturnExpr, env: Environment): RuntimeVal {
+    return { type: 'ReturnVal', value: evaluate(node.value, env) } as ReturnVal;
 }
 
 function evaluateFuncDecl(node: FuncDecl, env: Environment): RuntimeVal {
@@ -481,16 +324,13 @@ function evaluateFuncDecl(node: FuncDecl, env: Environment): RuntimeVal {
     return MK_NULL();
 }
 
-function evaluateForStmt(
-    node: ForStmt,
-    env: Environment,
-): RuntimeVal {
+function evaluateForStmt(node: ForStmt, env: Environment): RuntimeVal {
     const starti = node.startIndex;
     const i = evaluate(starti, env);
     const endi = node.endIndex;
     const end = evaluate(endi, env);
     const identifier = node.variable.symbol;
-    const step = (evaluate(node.step, env)) as NumberVal;
+    const step = evaluate(node.step, env) as NumberVal;
 
     const body = node.body;
     let ending = {} as RuntimeVal;
@@ -498,30 +338,18 @@ function evaluateForStmt(
         const newEnv = new Environment(env);
 
         if (!newEnv.hasVar(identifier)) {
-            newEnv.declareVar(
-                identifier,
-                { value: index, type: "NumberVal" } as NumberVal,
-                "NumberVal",
-            );
+            newEnv.declareVar(identifier, { value: index, type: 'NumberVal' } as NumberVal, 'NumberVal');
         } else {
-            newEnv.assignVar(identifier, {
-                value: index,
-                type: "NumberVal",
-            } as NumberVal);
+            newEnv.assignVar(identifier, { value: index, type: 'NumberVal' } as NumberVal);
         }
-        for (let index = 0; index < body.length; index++) {
-            const s = body[index];
-            ending = evaluate(s, newEnv);
-        }
+        ending = evaluateBlock(body, newEnv);
+        if (ending.type == 'ReturnVal') return ending; // bubble up
     }
 
     return ending;
 }
 
-function evaluateForEachStmt(
-    node: ForEachStmt,
-    env: Environment,
-): RuntimeVal {
+function evaluateForEachStmt(node: ForEachStmt, env: Environment): RuntimeVal {
     const lista = node.list.symbol;
     const identifier = node.variable.symbol;
 
@@ -530,7 +358,7 @@ function evaluateForEachStmt(
     if (env.hasVar(lista)) {
         list = lookupVar(node, lista, env) as ListVal;
     } else {
-        throw reportError("Lista não existe", node.line);
+        throw reportError('Lista não existe', node.line);
     }
 
     const val = 0;
@@ -551,208 +379,140 @@ function evaluateForEachStmt(
         const item = list.value[val];
         env.assignVar(identifier, item);
 
-        for (let index = 0; index < body.length; index++) {
-            const s = body[index];
-            ending = evaluate(s, newEnv);
-        }
+        ending = evaluateBlock(body, newEnv);
+        if (ending.type == 'ReturnVal') return ending; //bubble up
     }
 
     return ending;
 }
 
-function evaluateIfStmt(
-    node: IfStmt,
-    env: Environment,
-): RuntimeVal {
+function evaluateIfStmt(node: IfStmt, env: Environment): RuntimeVal {
     const comparison = node.comparison;
     const body = node.body;
-    const resultComp = (evaluate(comparison, env)) as BooleanVal;
+    const resultComp = evaluate(comparison, env) as BooleanVal;
     let lastRes = MK_NULL() as RuntimeVal;
+    const newEnv = new Environment(env);
     if (resultComp.value == true) {
-        const newEnv = new Environment(env);
-        for (let index = 0; index < body.length; index++) {
-            const s = body[index];
-            const curr = evaluate(s, newEnv);
-            if (curr.type != "NullVal") lastRes = curr;
-        }
+        lastRes = evaluateBlock(body, newEnv);
+        if (lastRes.type == 'ReturnVal') return lastRes; //bubble up
     } else if (node.else) {
-        const newEnv = new Environment(env);
-        for (let index = 0; index < node.else.length; index++) {
-            const s = node.else[index];
-            const curr = evaluate(s, newEnv);
-            if (curr.type != "NullVal") lastRes = curr;
-        }
+        lastRes = evaluateBlock(node.else, newEnv);
+        if (lastRes.type == 'ReturnVal') return lastRes; //bubble up
     }
     return lastRes;
 }
 
-function evaluateComparison(
-    node: ComparatorExpr,
-    env: Environment,
-): RuntimeVal {
+function evaluateComparison(node: ComparatorExpr, env: Environment): RuntimeVal {
     const operator = node.operator;
-    const result = { value: false, type: "BooleanVal" } as BooleanVal;
+    const result = { value: false, type: 'BooleanVal' } as BooleanVal;
     let left, right;
     try {
         switch (operator) {
-            case "==":
+            case '==':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
                 result.value = left.value == right.value && left.type == right.type;
                 break;
-            case ">=":
+            case '>=':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
-                if (
-                    (right.type == "NumberVal" || right.type == "RealVal") &&
-                    (left.type == "NumberVal" || left.type == "RealVal")
-                ) {
+                if ((right.type == 'NumberVal' || right.type == 'RealVal') && (left.type == 'NumberVal' || left.type == 'RealVal')) {
                     result.value = left.value >= right.value;
                     break;
                 } else {
-                    throw reportError(
-                        "Tentou avaliar dois tipos incompativeis: " +
-                        (evaluate(node.left, env)).type +
-                        " e " +
-                        (evaluate(node.right, env)).type,
-                        node.line,
-                    );
+                    throw reportError('Tentou avaliar dois tipos incompativeis: ' + evaluate(node.left, env).type + ' e ' + evaluate(node.right, env).type, node.line);
                 }
-            case "<=":
+            case '<=':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
-                if (
-                    (right.type == "NumberVal" || right.type == "RealVal") &&
-                    (left.type == "NumberVal" || left.type == "RealVal")
-                ) {
+                if ((right.type == 'NumberVal' || right.type == 'RealVal') && (left.type == 'NumberVal' || left.type == 'RealVal')) {
                     result.value = left.value <= right.value;
                     break;
                 } else {
-                    throw reportError(
-                        "Tentou avaliar dois tipos incompativeis: " +
-                        (evaluate(node.left, env)).type +
-                        " e " +
-                        (evaluate(node.right, env)).type,
-                        node.line,
-                    );
+                    throw reportError('Tentou avaliar dois tipos incompativeis: ' + evaluate(node.left, env).type + ' e ' + evaluate(node.right, env).type, node.line);
                 }
-            case ">":
+            case '>':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
-                if (
-                    (right.type == "NumberVal" || right.type == "RealVal") &&
-                    (left.type == "NumberVal" || left.type == "RealVal")
-                ) {
+                if ((right.type == 'NumberVal' || right.type == 'RealVal') && (left.type == 'NumberVal' || left.type == 'RealVal')) {
                     result.value = left.value > right.value;
                     break;
                 } else {
-                    throw reportError(
-                        "Tentou avaliar dois tipos incompativeis: " +
-                        (evaluate(node.left, env)).type +
-                        " e " +
-                        (evaluate(node.right, env)).type,
-                        node.line,
-                    );
+                    throw reportError('Tentou avaliar dois tipos incompativeis: ' + evaluate(node.left, env).type + ' e ' + evaluate(node.right, env).type, node.line);
                 }
-            case "<":
+            case '<':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
-                if (
-                    (right.type == "NumberVal" || right.type == "RealVal") &&
-                    (left.type == "NumberVal" || left.type == "RealVal")
-                ) {
+                if ((right.type == 'NumberVal' || right.type == 'RealVal') && (left.type == 'NumberVal' || left.type == 'RealVal')) {
                     result.value = left.value < right.value;
                     break;
                 } else {
-                    throw reportError(
-                        "Tentou avaliar dois tipos incompativeis: " +
-                        (evaluate(node.left, env)).type +
-                        " e " +
-                        (evaluate(node.right, env)).type,
-                        node.line,
-                    );
+                    throw reportError('Tentou avaliar dois tipos incompativeis: ' + evaluate(node.left, env).type + ' e ' + evaluate(node.right, env).type, node.line);
                 }
 
-            case "~=":
+            case '~=':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
                 result.value = left.value != right.value || left.type != right.type;
         }
         return result;
-    } catch {
-        throw "";
+    } catch (error) {
+        throw reportError(error as string, node.line);
     }
 }
 
-function evaluateVarDecl(
-    variable: VarDecl,
-    env: Environment,
-): RuntimeVal {
-    const value = variable.value
-        ? evaluate(variable.value, env)
-        : MK_NULL();
+function evaluateVarDecl(variable: VarDecl, env: Environment): RuntimeVal {
+    const value = variable.value ? evaluate(variable.value, env) : MK_NULL();
     const hasValue = variable.value ? true : false;
     let assignedtype = value.type;
-    let type = "NullVal" as ValueType;
-    let listType = "NullVal" as ValueType;
+    let type = 'NullVal' as ValueType;
+    let listType = 'NullVal' as ValueType;
     switch (variable.type) {
-        case "int":
-            type = "NumberVal";
-            if (assignedtype == "RealVal") {
-                assignedtype = "NumberVal";
+        case 'int':
+            type = 'NumberVal';
+            if (assignedtype == 'RealVal') {
+                assignedtype = 'NumberVal';
                 (value as RealVal).value = Math.floor((value as RealVal).value);
             }
             break;
-        case "caractere":
-            type = "StringVal";
+        case 'caractere':
+            type = 'StringVal';
             break;
-        case "real":
-            type = "RealVal";
-            if (assignedtype == "NumberVal") assignedtype = "RealVal";
+        case 'real':
+            type = 'RealVal';
+            if (assignedtype == 'NumberVal') assignedtype = 'RealVal';
             break;
-        case "logico":
-            type = "BooleanVal";
+        case 'logico':
+            type = 'BooleanVal';
             break;
-        case "var":
+        case 'var':
             type = assignedtype; //should work :3
             break;
-        case "int[]":
-            type = "ListVal";
-            listType = "NumberVal";
+        case 'int[]':
+            type = 'ListVal';
+            listType = 'NumberVal';
             break;
-        case "caractere[]":
-            type = "ListVal";
-            listType = "StringVal";
+        case 'caractere[]':
+            type = 'ListVal';
+            listType = 'StringVal';
             break;
-        case "real[]":
-            type = "ListVal";
-            listType = "RealVal";
+        case 'real[]':
+            type = 'ListVal';
+            listType = 'RealVal';
             break;
-        case "logico[]":
-            type = "ListVal";
-            listType = "BooleanVal";
+        case 'logico[]':
+            type = 'ListVal';
+            listType = 'BooleanVal';
             break;
     }
 
     if (hasValue && type != assignedtype) {
-        throw reportError(
-            "Tipo de variavel errado. Esperava: " +
-            type +
-            " e recebi: " +
-            assignedtype,
-            variable.line,
-        );
+        throw reportError('Tipo de variavel errado. Esperava: ' + type + ' e recebi: ' + assignedtype, variable.line);
     }
 
-    if (type == "ListVal" && hasValue) {
+    if (type == 'ListVal' && hasValue) {
         if ((value as ListVal).listType != listType) {
-            throw reportError(
-                "Lista com tipo incompatível. Esperava " +
-                listType +
-                " e recebi: " +
-                (value as ListVal).listType,
-                variable.line,
-            );
+            throw reportError('Lista com tipo incompatível. Esperava ' + listType + ' e recebi: ' + (value as ListVal).listType, variable.line);
         }
     }
 
@@ -766,11 +526,8 @@ function evaluateVarDecl(
     return value;
 }
 
-function evaluateVarAssignment(
-    node: AssignmentExpr,
-    env: Environment,
-): RuntimeVal {
-    if (node.assigne.kind === "AttributeLookup") {
+function evaluateVarAssignment(node: AssignmentExpr, env: Environment): RuntimeVal {
+    if (node.assigne.kind === 'AttributeLookup') {
         return evaluateAttributeAssignment(node, env);
     }
 
@@ -778,45 +535,33 @@ function evaluateVarAssignment(
 
     const valueside = evaluate(node.value, env);
 
-    const vartype = lookupVar(node, (varname as Identifier).symbol, env)
-        .type as ValueType as string as ValueType;
+    const vartype = lookupVar(node, (varname as Identifier).symbol, env).type as ValueType as string as ValueType;
     let assigneetype = valueside.type as ValueType;
 
     switch (vartype) {
-        case "NumberVal":
-            if (assigneetype == "RealVal") {
-                assigneetype = "NumberVal";
-                (valueside as NumberVal).value = Math.floor(
-                    (valueside as NumberVal).value,
-                );
+        case 'NumberVal':
+            if (assigneetype == 'RealVal') {
+                assigneetype = 'NumberVal';
+                (valueside as NumberVal).value = Math.floor((valueside as NumberVal).value);
                 valueside.type = assigneetype;
             }
             break;
-        case "RealVal":
-            if (assigneetype == "NumberVal") {
-                assigneetype = "RealVal";
-                valueside.type = "RealVal";
+        case 'RealVal':
+            if (assigneetype == 'NumberVal') {
+                assigneetype = 'RealVal';
+                valueside.type = 'RealVal';
             }
             break;
     }
 
-    if (assigneetype == vartype || vartype == "NullVal") {
+    if (assigneetype == vartype || vartype == 'NullVal') {
         return env.assignVar(varname.symbol, valueside);
     } else {
-        throw reportError(
-            "Tipo de variavel errado. Esperava: " +
-            vartype +
-            " e recebi: " +
-            assigneetype,
-            node.line,
-        );
+        throw reportError('Tipo de variavel errado. Esperava: ' + vartype + ' e recebi: ' + assigneetype, node.line);
     }
 }
 
-function evaluateAttributeAssignment(
-    node: AssignmentExpr,
-    env: Environment,
-): RuntimeVal {
+function evaluateAttributeAssignment(node: AssignmentExpr, env: Environment): RuntimeVal {
     const attLookup = node.assigne as AttributeLookup;
     const obj = lookupVar(node, attLookup.symbol, env) as ObjectVal;
     const objEnv = obj.env;
@@ -828,18 +573,16 @@ function evaluateAttributeAssignment(
     let assigneetype = valueside.type;
 
     switch (vartype) {
-        case "NumberVal":
-            if (assigneetype == "RealVal") {
-                assigneetype = "NumberVal";
-                (valueside as NumberVal).value = Math.floor(
-                    (valueside as NumberVal).value,
-                );
+        case 'NumberVal':
+            if (assigneetype == 'RealVal') {
+                assigneetype = 'NumberVal';
+                (valueside as NumberVal).value = Math.floor((valueside as NumberVal).value);
                 valueside.type = assigneetype;
             }
             break;
-        case "RealVal":
-            if (assigneetype == "NumberVal") {
-                assigneetype = "RealVal";
+        case 'RealVal':
+            if (assigneetype == 'NumberVal') {
+                assigneetype = 'RealVal';
                 valueside = valueside as RealVal;
             }
             break;
@@ -848,30 +591,17 @@ function evaluateAttributeAssignment(
     if (assigneetype == vartype) {
         return objEnv.assignVar(varname, valueside);
     } else {
-        throw reportError(
-            "Tipo de variavel errado. Esperava: " +
-            vartype +
-            " e recebi: " +
-            assigneetype,
-            node.line,
-        );
+        throw reportError('Tipo de variavel errado. Esperava: ' + vartype + ' e recebi: ' + assigneetype, node.line);
     }
 }
 
-function evaluateIdentifier(
-    identifier: Identifier,
-    env: Environment,
-): RuntimeVal {
+function evaluateIdentifier(identifier: Identifier, env: Environment): RuntimeVal {
     //change this
     const val = lookupVar(identifier, identifier.symbol, env);
     return val;
 }
 
-function evaluateFuncCall(
-    node: FuncCall,
-    env: Environment,
-    argsEnv?: Environment,
-): RuntimeVal {
+function evaluateFuncCall(node: FuncCall, env: Environment, argsEnv?: Environment): RuntimeVal {
     //check if argsEnv was passed
     argsEnv = argsEnv ? argsEnv : env;
 
@@ -889,10 +619,7 @@ function evaluateFuncCall(
 
     //check if arguments match
     if (args.length != passedArgs.length) {
-        throw reportError(
-            "Esperava " + args.length + " argumentos, recebi " + passedArgs.length,
-            node.line,
-        );
+        throw reportError('Esperava ' + args.length + ' argumentos, recebi ' + passedArgs.length, node.line);
     }
 
     const newEnv = new Environment(env);
@@ -901,15 +628,12 @@ function evaluateFuncCall(
         for (let index = 0; index < args.length; index++) {
             const arg = args[index];
             const passed = passedArgs[index];
-            const pArg = (evaluate(passed, argsEnv)) as RuntimeVal;
+            const pArg = evaluate(passed, argsEnv) as RuntimeVal;
             const passedType = pArg.type;
-            if (arg.type == passedType || arg.type == "NullVal") {
+            if (arg.type == passedType || arg.type == 'NullVal') {
                 newEnv.declareVar(arg.identifier, pArg, passedType);
             } else {
-                throw reportError(
-                    `Função ${identifier} esperava argumento número ${(index + 1)} como ${arg.type} mas recebi ${passedType}`,
-                    node.line,
-                );
+                throw reportError(`Função ${identifier} esperava argumento número ${index + 1} como ${arg.type} mas recebi ${passedType}`, node.line);
             }
         }
     }
@@ -921,52 +645,32 @@ function evaluateFuncCall(
     }
 }
 
-function evaluateBinaryExpr(
-    binop: BinaryExpr,
-    env: Environment,
-): RuntimeVal {
+function evaluateBinaryExpr(binop: BinaryExpr, env: Environment): RuntimeVal {
     const leftHand = evaluate(binop.left, env);
     const rightHand = evaluate(binop.right, env);
 
     //needs to match to "NumberVal", "RealVal", "NumericLiteral". How do i do that?
-    if (leftHand.type == "NullVal" || rightHand.type == "NullVal") {
+    if (leftHand.type == 'NullVal' || rightHand.type == 'NullVal') {
         return MK_NULL();
     }
 
-    if (binop.operator == "..") {
+    if (binop.operator == '..') {
         const l = leftHand as StringVal;
         const r = rightHand as StringVal;
         const v = l.value + r.value;
-        const res = { type: "StringVal", value: v } as StringVal;
+        const res = { type: 'StringVal', value: v } as StringVal;
         const result = res;
         return result;
-    } else if (
-        binop.operator == "e" ||
-        binop.operator == "ou" ||
-        binop.operator == "xou"
-    ) {
-        const v = evaluateLogicalBinaryExpr(
-            leftHand,
-            rightHand,
-            binop.operator,
-            binop.line,
-        );
+    } else if (binop.operator == 'e' || binop.operator == 'ou' || binop.operator == 'xou') {
+        const v = evaluateLogicalBinaryExpr(leftHand, rightHand, binop.operator, binop.line);
         return v;
     } else {
         //check if both are numeric values
-        if (leftHand.type != "RealVal" && leftHand.type != "NumberVal") {
-            throw reportError(
-                "Tentativa de fazer operação numérica com valor não numérico: " +
-                leftHand.type,
-                binop.line,
-            );
+        if (leftHand.type != 'RealVal' && leftHand.type != 'NumberVal') {
+            throw reportError('Tentativa de fazer operação numérica com valor não numérico: ' + leftHand.type, binop.line);
         }
-        if (rightHand.type != "RealVal" && rightHand.type != "NumberVal") {
-            throw reportError(
-                "Tentativa de fazer operação numérica com valor não numérico: " +
-                rightHand.type,
-                binop.line,
-            );
+        if (rightHand.type != 'RealVal' && rightHand.type != 'NumberVal') {
+            throw reportError('Tentativa de fazer operação numérica com valor não numérico: ' + rightHand.type, binop.line);
         }
 
         const left = leftHand as RealVal;
@@ -974,7 +678,7 @@ function evaluateBinaryExpr(
         const v = evaluateNumericBinaryExpr(left, right, binop.operator);
 
         let result;
-        if (leftHand.type == "NumberVal" || rightHand.type == "NumberVal") {
+        if (leftHand.type == 'NumberVal' || rightHand.type == 'NumberVal') {
             v.value = Math.floor(v.value);
             result = v as unknown;
             result = result as NumberVal;
@@ -983,82 +687,61 @@ function evaluateBinaryExpr(
     }
 }
 
-function evaluateLogicalBinaryExpr(
-    left: RuntimeVal,
-    right: RuntimeVal,
-    op: string,
-    line: number,
-): BooleanVal {
-    if (left.type != "BooleanVal" || right.type != "BooleanVal") {
-        throw reportError(
-            "Tentativa de fazer operação logica com valores não booleanos",
-            line,
-        );
+function evaluateLogicalBinaryExpr(left: RuntimeVal, right: RuntimeVal, op: string, line: number): BooleanVal {
+    if (left.type != 'BooleanVal' || right.type != 'BooleanVal') {
+        throw reportError('Tentativa de fazer operação logica com valores não booleanos', line);
     }
 
     switch (op) {
-        case "e":
-            return {
-                type: "BooleanVal",
-                value: left.value && right.value,
-            } as BooleanVal;
-        case "ou":
-            return {
-                type: "BooleanVal",
-                value: left.value || right.value,
-            } as BooleanVal;
-        case "xou":
-            return {
-                type: "BooleanVal",
-                value: left.value != right.value,
-            } as BooleanVal;
+        case 'e':
+            return { type: 'BooleanVal', value: left.value && right.value } as BooleanVal;
+        case 'ou':
+            return { type: 'BooleanVal', value: left.value || right.value } as BooleanVal;
+        case 'xou':
+            return { type: 'BooleanVal', value: left.value != right.value } as BooleanVal;
     }
-    return { type: "BooleanVal", value: false } as BooleanVal;
+    return { type: 'BooleanVal', value: false } as BooleanVal;
 }
 
-function evaluateNumericBinaryExpr(
-    left: RealVal,
-    right: RealVal,
-    op: string,
-): RealVal {
+function evaluateNumericBinaryExpr(left: RealVal, right: RealVal, op: string): RealVal {
     let result = 0;
     switch (op) {
-        case "+":
+        case '+':
             result = left.value + right.value;
             break;
-        case "-":
+        case '-':
             result = left.value - right.value;
             break;
-        case "*":
+        case '*':
             result = left.value * right.value;
             break;
-        case "/":
+        case '/':
             result = left.value / right.value;
             break;
-        case "%":
+        case '%':
             result = left.value % right.value;
             break;
-        case "//":
+        case '//':
             result = Math.floor(left.value / right.value);
             break;
-        case "^":
+        case '^':
             result = Math.pow(left.value, right.value);
             break;
     }
-    return { type: "RealVal", value: result } as RealVal;
+    return { type: 'RealVal', value: result } as RealVal;
 }
 
-let outputBuffer = "";
+let outputBuffer = '';
 export function appendOutput(text: string) {
     outputBuffer += text;
 }
 
 export function clearOutputBuffer() {
-    outputBuffer = "";
+    outputBuffer = '';
 }
 
 export function flushOutputBuffer() {
-    if (outputBuffer.endsWith("\n")) {
+    if (outputBuffer.endsWith('\n')) {
         console.log(outputBuffer.trimEnd());
         clearOutputBuffer();
     }
@@ -1069,21 +752,14 @@ export function setGlobalEnv(env: Environment) {
     GLOBAL_ENV = env;
 }
 
-function evaluateProgram(
-    program: Program,
-    env: Environment,
-): RuntimeVal {
-    outputBuffer = "";
-    let lastEvaluated: RuntimeVal = {
-        type: "NullVal",
-        value: "nulo",
-    } as NullVal;
+function evaluateProgram(program: Program, env: Environment): RuntimeVal {
+    outputBuffer = '';
+    let lastEvaluated: RuntimeVal = { type: 'NullVal', value: 'nulo' } as NullVal;
     GLOBAL_ENV = env;
-    for (const statement of program.body) {
-        lastEvaluated = evaluate(statement, env);
-    }
+    console.log(program.body);
+    lastEvaluated = evaluate(program.body, env);
 
-    if (outputBuffer != "") {
+    if (outputBuffer != '') {
         console.log(outputBuffer);
     }
 

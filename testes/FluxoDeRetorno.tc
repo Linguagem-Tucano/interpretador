@@ -1,0 +1,9 @@
+funcao teste() {
+    se (verdadeiro) {
+        retorna 10;
+        Saida.escreval("Isso não devia rodar!");
+    }
+    retorna 20;
+}
+
+Saida.escreval(teste())
