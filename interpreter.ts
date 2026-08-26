@@ -208,9 +208,7 @@ function evaluateNewObjectExpr(node: NewObjectExpr, env: Environment): RuntimeVa
     const _parent = nodeClass.parent;
     const body = nodeClass.body;
 
-    const pEnv = env;
-
-    const objectEnv = new Environment(pEnv);
+    const objectEnv = new Environment();
 
     objectEnv.declareVar('isso', { type: 'ObjectVal', value: 'Objeto da classe ' + node.class, env: objectEnv } as ObjectVal, 'ObjectVal');
 

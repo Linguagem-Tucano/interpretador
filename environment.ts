@@ -76,7 +76,7 @@ export default class Environment {
             return true;
         }
         if (this.parent == undefined) {
-            throw `Função ${funcname} não existe`;
+            return false;
         }
         return this.parent.hasFunc(funcname);
     }

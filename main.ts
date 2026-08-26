@@ -3,7 +3,7 @@
 import Parser from './parser.ts';
 import { clearOutputBuffer, evaluate, flushOutputBuffer, setGlobalEnv } from './interpreter.ts';
 import Environment from './environment.ts';
-import { Expr, FuncCall, Program, Stmt, StringLiteral } from './ast.ts';
+import { Body, Expr, FuncCall, Program, Stmt, StringLiteral } from './ast.ts';
 
 let env = new Environment();
 
@@ -96,7 +96,7 @@ export function callbackFun(funcname: string, argumentos: string[]) {
             args.push(literal);
         }
         const funccall = { kind: 'FuncCall', identifier: funcname, args } as FuncCall;
-        const body = [funccall] as Stmt[];
+        const body = {kind: 'Body', lines:[funccall], line:1} as Body;
         const pr = { kind: 'Program', body } as Program;
         evaluate(pr, env);
     }
