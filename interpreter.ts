@@ -621,6 +621,7 @@ function evaluateFuncCall(node: FuncCall, env: Environment, argsEnv?: Environmen
     }
 
     const newEnv = new Environment(env);
+    const argsList = [] as RuntimeVal[];
     if (args.length > 0) {
         //has arguments
         for (let index = 0; index < args.length; index++) {
@@ -630,6 +631,7 @@ function evaluateFuncCall(node: FuncCall, env: Environment, argsEnv?: Environmen
             const passedType = pArg.type;
             if (arg.type == passedType || arg.type == 'NullVal') {
                 newEnv.declareVar(arg.identifier, pArg, passedType);
+                argsList.push(pArg);
             } else {
                 throw reportError(`Função ${identifier} esperava argumento número ${index + 1} como ${arg.type} mas recebi ${passedType}`, node.line);
             }
@@ -637,7 +639,7 @@ function evaluateFuncCall(node: FuncCall, env: Environment, argsEnv?: Environmen
     }
 
     try {
-        return func.call(newEnv);
+        return func.call(argsList, newEnv);
     } catch (error) {
         throw reportError(error as string, node.line);
     }
