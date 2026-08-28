@@ -194,8 +194,7 @@ export function saveCanvas() {
 
 export function drawRectangle(x: number, y: number, w: number, h: number, fill: string) {
     if (ctx != undefined) {
-        ctx.rect(x, y, w, h);
-        fill == "preencher" ? ctx.fill() : ctx.stroke();
+        fill == "preencher" ? ctx.fillRect(x, y, w, h) : ctx.strokeRect(x, y, w, h);
     } else {
         throw 'Ambiente não suporta gráficos';
     }
