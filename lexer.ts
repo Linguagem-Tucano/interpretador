@@ -21,7 +21,6 @@ export enum TokenType {
     Assignment,
 
     Number,
-    Real,
     Identifier,
     StringLiteral,
 
@@ -72,10 +71,10 @@ export enum TokenType {
 }
 const reservedWordsObj = {
     var: TokenType.Var,
-    int: TokenType.Int,
-    texto: TokenType.Texto,
-    real: TokenType.RealWord,
-    logico: TokenType.Logico,
+    // int: TokenType.Int,
+    // texto: TokenType.Texto,
+    // real: TokenType.RealWord,
+    // logico: TokenType.Logico,
     global: TokenType.Global,
 
     se: TokenType.Se,
@@ -318,7 +317,7 @@ export function tokenize(sourceCode: string): Token[] {
                 src.shift();
             }
             let ttype = TokenType.Number;
-            if (number.includes('.')) ttype = TokenType.Real;
+            if (number.includes('.')) ttype = TokenType.Number;
             tokens.push(token(number, ttype, lineNumber));
             continue;
         }

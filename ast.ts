@@ -1,6 +1,6 @@
 import { ValueType } from './values.ts';
 
-export type nodeType = 'Program' | 'NumericLiteral' | 'RealLiteral' | 'StringLiteral' | 'ListLiteral' | 'Identifier' | 'ListIdentifier' | 'BinaryExpr' | 'ComparatorExpr' | 'AssignmentExpr' | 'UnaryExpr' | 'EOL' | 'Body' | 'Property' | 'ObjectLiteral' | 'IfStmt' | 'SwitchStmt' | 'ForStmt' | 'ForEachStmt' | 'WhileStmt' | 'UntilStmt' | 'EndScope' | 'Dot' | 'VarDecl' | 'FuncDecl' | 'FuncCall' | 'ReturnExpr' | 'ArgumentExpr' | 'ConvertExpr' | 'AttributeLookup' | 'CallLookup' | 'ClassExpr' | 'ClassAtribute' | 'ClassConstructor' | 'ClassFunction' | 'ObjectLiteral' | 'NewObjectExpr' | 'PropertyDecl';
+export type nodeType = 'Program' | 'NumericLiteral' | 'StringLiteral' | 'ListLiteral' | 'Identifier' | 'ListIdentifier' | 'BinaryExpr' | 'ComparatorExpr' | 'AssignmentExpr' | 'UnaryExpr' | 'EOL' | 'Body' | 'Property' | 'ObjectLiteral' | 'IfStmt' | 'SwitchStmt' | 'ForStmt' | 'ForEachStmt' | 'WhileStmt' | 'UntilStmt' | 'EndScope' | 'Dot' | 'VarDecl' | 'FuncDecl' | 'FuncCall' | 'ReturnExpr' | 'ArgumentExpr' | 'ConvertExpr' | 'AttributeLookup' | 'CallLookup' | 'ClassExpr' | 'ClassAtribute' | 'ClassConstructor' | 'ClassFunction' | 'ObjectLiteral' | 'NewObjectExpr' | 'PropertyDecl';
 
 export interface Stmt {
     kind: nodeType;
@@ -177,11 +177,6 @@ export interface AssignmentExpr extends Expr {
 
 export interface NumericLiteral extends Expr {
     kind: 'NumericLiteral';
-    value: number;
-}
-
-export interface RealLiteral extends Expr {
-    kind: 'RealLiteral';
     value: number;
 }
 

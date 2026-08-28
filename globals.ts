@@ -13,21 +13,21 @@ export function setupEnv(env: Environment) {
     const clockFn = new Function({} as Body, []);
     clockFn.call = function (_env: Environment) {
         const ms = Date.now() - nowClock;
-        return { type: 'RealVal', value: ms / 1000 } as RuntimeVal;
+        return { type: 'NumberVal', value: ms / 1000 } as RuntimeVal;
     };
     env.functions.set('relogio', clockFn);
 
     const mathEnv = new Environment({} as Environment);
-    mathEnv.declareVar('pi', { type: 'RealVal', value: Math.PI } as RuntimeVal, 'RealVal');
-    mathEnv.declareVar('e', { type: 'RealVal', value: Math.E } as RuntimeVal, 'RealVal');
+    mathEnv.declareVar('pi', { type: 'NumberVal', value: Math.PI } as RuntimeVal, 'NumberVal');
+    mathEnv.declareVar('e', { type: 'NumberVal', value: Math.E } as RuntimeVal, 'NumberVal');
 
     const sqrtFn = new Function({} as Body, [{ identifier: 'x', type: 'NullVal' } as ArgumentExpr]);
     sqrtFn.call = function (env: Environment) {
         const v = env.lookupVar('x');
-        if (v.type != 'RealVal' && v.type != 'NumberVal') {
+        if (v.type != 'NumberVal') {
             throw `Função raiz quadrada espera um número, mas recebeu ${v.type}`;
         }
-        return { type: 'RealVal', value: Math.sqrt((v as RuntimeVal).value) } as RuntimeVal;
+        return { type: 'NumberVal', value: Math.sqrt((v as RuntimeVal).value) } as RuntimeVal;
     };
 
     mathEnv.functions.set('raiz', sqrtFn);
@@ -94,7 +94,7 @@ export function setupEnv(env: Environment) {
         if (Number.isNaN(res)) {
             throw `Valor ${input} não é um número válido`;
         }
-        return { type: 'RealVal', value: res } as RuntimeVal;
+        return { type: 'NumberVal', value: res } as RuntimeVal;
     };
 
     const entradaEnv = new Environment({} as Environment);

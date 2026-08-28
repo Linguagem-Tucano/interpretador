@@ -38,7 +38,7 @@ export function repl() {
             console.log(v);
         } catch (_error) {
             //empty
-            console.log(_error);
+            //console.log(_error);
         }
     }
 }

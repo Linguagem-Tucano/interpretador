@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import Environment from './environment.ts';
 
-export type ValueType = 'NullVal' | 'NumberVal' | 'RealVal' | 'StringVal' | 'BooleanVal' | 'ListVal' | 'ObjectVal' | 'ReturnVal';
+export type ValueType = 'NullVal' | 'NumberVal' | 'StringVal' | 'BooleanVal' | 'ListVal' | 'ObjectVal' | 'ReturnVal';
 
 export interface RuntimeVal {
     type: ValueType;
@@ -15,11 +15,6 @@ export interface NullVal extends RuntimeVal {
 
 export interface NumberVal extends RuntimeVal {
     type: 'NumberVal';
-    value: number;
-}
-
-export interface RealVal extends RuntimeVal {
-    type: 'RealVal';
     value: number;
 }
 
@@ -37,6 +32,8 @@ export interface ListVal extends RuntimeVal {
     type: 'ListVal';
     value: RuntimeVal[];
     listType: ValueType;
+    elementType: ValueType;
+    depth: number;
 }
 
 export interface ObjectVal extends RuntimeVal {

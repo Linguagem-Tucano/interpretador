@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-case-declarations
-import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Body, ClassExpr, ComparatorExpr, ConvertExpr, Dot, EndOfLine, Expr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, SwitchStmt, UnaryExpr, UntilStmt, VarDecl, WhileStmt } from './ast.ts';
+import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, Body, ClassExpr, ComparatorExpr, ConvertExpr, Dot, EndOfLine, Expr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, Program, ReturnExpr, Stmt, StringLiteral, SwitchStmt, UnaryExpr, UntilStmt, VarDecl, WhileStmt } from './ast.ts';
 import { lexerError, Token, tokenize, TokenType } from './lexer.ts';
 import { ValueType } from './values.ts';
 import { reportError } from './main.ts';
@@ -54,16 +54,6 @@ export default class Parser {
         //this is not going to work man...
         switch (this.at().type) {
             case TokenType.Var:
-                return this.parseVarDecl();
-            case TokenType.Texto:
-                return this.parseVarDecl();
-            case TokenType.Int:
-                return this.parseVarDecl();
-            case TokenType.RealWord:
-                return this.parseVarDecl();
-            case TokenType.Logico:
-                return this.parseVarDecl();
-            case TokenType.Global:
                 return this.parseVarDecl();
             case TokenType.Se:
                 return this.parseIfStmt();
@@ -244,9 +234,6 @@ export default class Parser {
                     case TokenType.Texto:
                         returnType = 'StringVal';
                         break;
-                    case TokenType.RealWord:
-                        returnType = 'RealVal';
-                        break;
                     case TokenType.Logico:
                         returnType = 'BooleanVal';
                         break;
@@ -278,9 +265,6 @@ export default class Parser {
                         case TokenType.Texto:
                             argtype = 'StringVal';
                             break;
-                        case TokenType.RealWord:
-                            argtype = 'RealVal';
-                            break;
                         case TokenType.Logico:
                             argtype = 'BooleanVal';
                             break;
@@ -307,9 +291,6 @@ export default class Parser {
                         break;
                     case TokenType.Texto:
                         returnType = 'StringVal';
-                        break;
-                    case TokenType.RealWord:
-                        returnType = 'RealVal';
                         break;
                     case TokenType.Logico:
                         returnType = 'BooleanVal';
@@ -381,12 +362,22 @@ export default class Parser {
     }
 
     private parseVarDecl(): Stmt {
-        let local = false;
-        if (this.at().type == TokenType.Global) {
-            local = true;
-            this.advance();
-        }
-        let varType = this.advance().value;
+        const global = false; //preciso de um jeito melhor
+
+        //mudança: agora a sintaxe é `var nome: tipo (= valor)`
+
+        // if (this.at().type == TokenType.Global) {
+        //     local = true;
+        //     this.advance();
+        // }
+
+        this.advance(); //sair do "var"
+
+        const identifier = this.eatOnly(TokenType.Identifier, 'Esperava um nome de variável')?.value;
+
+        this.eatOnly(TokenType.DoisPontos, 'Esperava um : depois do nome da variável');
+
+        let varType = this.eatOnly(TokenType.Identifier, 'Esperava um tipo de variável')?.value;
 
         //check if list
         while (this.at().type == TokenType.LColch) {
@@ -395,12 +386,10 @@ export default class Parser {
             varType += '[]';
         }
 
-        const identifier = this.eatOnly(TokenType.Identifier, 'Esperava um nome de variável')?.value;
-
         if (this.at().type == TokenType.EOL || this.at().type == TokenType.EOF) {
-            return { kind: 'VarDecl', identifier, line: this.at().line, global: local, type: varType } as VarDecl;
+            return { kind: 'VarDecl', identifier, line: this.at().line, global, type: varType } as VarDecl;
         } else if (this.at().type == TokenType.Assignment) {
-            const decl = { kind: 'VarDecl', value: this.parseStmt(), identifier, type: varType, line: this.at().line, global: local } as VarDecl;
+            const decl = { kind: 'VarDecl', value: this.parseStmt(), identifier, type: varType, line: this.at().line, global: global } as VarDecl;
             return decl;
         } else {
             throw reportError('Esperava ; ou = na declaração de váriavel', this.at().line);
@@ -567,9 +556,6 @@ export default class Parser {
             case TokenType.Texto:
                 type = 'StringVal';
                 break;
-            case TokenType.RealWord:
-                type = 'RealVal';
-                break;
             case TokenType.Logico:
                 type = 'BooleanVal';
                 break;
@@ -638,11 +624,9 @@ export default class Parser {
             case TokenType.Ponto:
                 return { kind: 'Dot', line: this.at().line } as Dot;
             case TokenType.Number:
-                return { kind: 'NumericLiteral', value: parseInt(this.advance().value), line: this.at().line } as NumericLiteral;
+                return { kind: 'NumericLiteral', value: parseFloat(this.advance().value), line: this.at().line } as NumericLiteral;
             case TokenType.StringLiteral:
                 return { kind: 'StringLiteral', value: this.advance().value, line: this.at().line } as StringLiteral;
-            case TokenType.Real:
-                return { kind: 'RealLiteral', value: parseFloat(this.advance().value), line: this.at().line } as RealLiteral;
             case TokenType.LParen:
                 this.advance();
                 const value = this.parseStmt();

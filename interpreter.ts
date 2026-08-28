@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-case-declarations
-import { BooleanVal, ListVal, MK_NULL, NullVal, NumberVal, ObjectVal, RealVal, ReturnVal, RuntimeVal, StringVal, ValueType } from './values.ts';
-import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, Body, CallLookup, ClassExpr, ComparatorExpr, ConvertExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, Program, RealLiteral, ReturnExpr, Stmt, StringLiteral, SwitchStmt, UnaryExpr, UntilStmt, VarDecl, WhileStmt } from './ast.ts';
+import { BooleanVal, ListVal, MK_NULL, NullVal, NumberVal, ObjectVal, ReturnVal, RuntimeVal, StringVal, ValueType } from './values.ts';
+import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, Body, CallLookup, ClassExpr, ComparatorExpr, ConvertExpr, ForEachStmt, ForStmt, FuncCall, FuncDecl, Identifier, IfStmt, ListIdentifier, ListLiteral, NewObjectExpr, NumericLiteral, ObjectLiteral, Program, ReturnExpr, Stmt, StringLiteral, SwitchStmt, UnaryExpr, UntilStmt, VarDecl, WhileStmt } from './ast.ts';
 import Environment from './environment.ts';
 import { reportError } from './main.ts';
 import { Function } from './function.ts';
@@ -11,8 +11,6 @@ export function evaluate(astNode: Stmt, env: Environment): RuntimeVal {
             return { value: (astNode as NumericLiteral).value, type: 'NumberVal' } as NumberVal;
         case 'StringLiteral':
             return { value: (astNode as StringLiteral).value, type: 'StringVal' } as StringVal;
-        case 'RealLiteral':
-            return { value: (astNode as RealLiteral).value, type: 'RealVal' } as RealVal;
         case 'ObjectLiteral':
             return { className: (astNode as ObjectLiteral).className, value: 'Objeto da classe ' + (astNode as ObjectLiteral).className, env, type: 'ObjectVal' } as ObjectVal;
         case 'ListLiteral':
@@ -111,7 +109,7 @@ function evaluateUnaryExpr(node: UnaryExpr, env: Environment): RuntimeVal {
             return { ...nope, value: !nope.value };
         case '-':
             const val = evaluate(node.value, env);
-            if (val.type != 'NumberVal' && val.type != 'RealVal') {
+            if (val.type != 'NumberVal') {
                 throw reportError('Tentou negativar um valor não numérico', node.line);
             }
             val.value = -1 * val.value;
@@ -130,8 +128,6 @@ function evaluateConvertExpr(node: ConvertExpr, env: Environment): RuntimeVal {
         case 'StringVal':
             if (firstType == 'NumberVal') {
                 return { type: 'StringVal', value: value.value.toString() } as StringVal;
-            } else if (firstType == 'RealVal') {
-                return { type: 'StringVal', value: value.value.toFixed(2) } as StringVal;
             } else if (firstType == 'BooleanVal') {
                 return { type: 'StringVal', value: value.value ? 'verdadeiro' : 'falso' } as StringVal;
             } else if (firstType == 'ListVal') {
@@ -148,33 +144,15 @@ function evaluateConvertExpr(node: ConvertExpr, env: Environment): RuntimeVal {
                     throw reportError("Não é possível converter '" + value.value + "' para número.", node.line);
                 }
                 return { type: 'NumberVal', value: num } as NumberVal;
-            } else if (firstType == 'RealVal') {
-                return { type: 'NumberVal', value: Math.floor((value as RealVal).value) } as NumberVal;
             } else if (firstType == 'BooleanVal') {
                 return { type: 'NumberVal', value: value.value ? 1 : 0 } as NumberVal;
             } else {
                 throw reportError('Não é possível converter ' + firstType + ' para inteiro.', node.line);
             }
-        case 'RealVal':
-            if (firstType == 'StringVal') {
-                const num = parseFloat(value.value);
-                if (isNaN(num)) {
-                    throw reportError("Não é possível converter '" + value.value + "' para real.", node.line);
-                }
-                return { type: 'RealVal', value: num } as RealVal;
-            } else if (firstType == 'NumberVal') {
-                return { type: 'RealVal', value: value.value } as RealVal;
-            } else if (firstType == 'BooleanVal') {
-                return { type: 'RealVal', value: value.value ? 1.0 : 0.0 } as RealVal;
-            } else {
-                throw reportError('Não é possível converter ' + firstType + ' para real.', node.line);
-            }
         case 'BooleanVal':
             if (firstType == 'StringVal') {
                 return { type: 'BooleanVal', value: value.value == 'verdadeiro' ? true : false } as BooleanVal;
             } else if (firstType == 'NumberVal') {
-                return { type: 'BooleanVal', value: value.value > 0 ? true : false } as BooleanVal;
-            } else if (firstType == 'RealVal') {
                 return { type: 'BooleanVal', value: value.value > 0 ? true : false } as BooleanVal;
             } else {
                 throw reportError('Não é possível converter ' + firstType + ' para lógico.', node.line);
@@ -414,7 +392,7 @@ function evaluateComparison(node: ComparatorExpr, env: Environment): RuntimeVal 
             case '>=':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
-                if ((right.type == 'NumberVal' || right.type == 'RealVal') && (left.type == 'NumberVal' || left.type == 'RealVal')) {
+                if ((right.type == 'NumberVal') && (left.type == 'NumberVal')) {
                     result.value = left.value >= right.value;
                     break;
                 } else {
@@ -423,7 +401,7 @@ function evaluateComparison(node: ComparatorExpr, env: Environment): RuntimeVal 
             case '<=':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
-                if ((right.type == 'NumberVal' || right.type == 'RealVal') && (left.type == 'NumberVal' || left.type == 'RealVal')) {
+                if ((right.type == 'NumberVal') && (left.type == 'NumberVal')) {
                     result.value = left.value <= right.value;
                     break;
                 } else {
@@ -432,7 +410,7 @@ function evaluateComparison(node: ComparatorExpr, env: Environment): RuntimeVal 
             case '>':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
-                if ((right.type == 'NumberVal' || right.type == 'RealVal') && (left.type == 'NumberVal' || left.type == 'RealVal')) {
+                if ((right.type == 'NumberVal') && (left.type == 'NumberVal')) {
                     result.value = left.value > right.value;
                     break;
                 } else {
@@ -441,7 +419,7 @@ function evaluateComparison(node: ComparatorExpr, env: Environment): RuntimeVal 
             case '<':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
-                if ((right.type == 'NumberVal' || right.type == 'RealVal') && (left.type == 'NumberVal' || left.type == 'RealVal')) {
+                if ((right.type == 'NumberVal') && (left.type == 'NumberVal')) {
                     result.value = left.value < right.value;
                     break;
                 } else {
@@ -466,37 +444,18 @@ function evaluateVarDecl(variable: VarDecl, env: Environment): RuntimeVal {
     let type = 'NullVal' as ValueType;
     let listType = 'NullVal' as ValueType;
     switch (variable.type) {
-        case 'int':
+        case 'numero':
             type = 'NumberVal';
-            if (assignedtype == 'RealVal') {
-                assignedtype = 'NumberVal';
-                (value as RealVal).value = Math.floor((value as RealVal).value);
-            }
             break;
         case 'texto':
             type = 'StringVal';
             break;
-        case 'real':
-            type = 'RealVal';
-            if (assignedtype == 'NumberVal') assignedtype = 'RealVal';
-            break;
         case 'logico':
             type = 'BooleanVal';
-            break;
-        case 'var':
-            type = assignedtype; //should work :3
-            break;
-        case 'int[]':
-            type = 'ListVal';
-            listType = 'NumberVal';
             break;
         case 'texto[]':
             type = 'ListVal';
             listType = 'StringVal';
-            break;
-        case 'real[]':
-            type = 'ListVal';
-            listType = 'RealVal';
             break;
         case 'logico[]':
             type = 'ListVal';
@@ -534,23 +493,7 @@ function evaluateVarAssignment(node: AssignmentExpr, env: Environment): RuntimeV
     const valueside = evaluate(node.value, env);
 
     const vartype = lookupVar(node, (varname as Identifier).symbol, env).type as ValueType as string as ValueType;
-    let assigneetype = valueside.type as ValueType;
-
-    switch (vartype) {
-        case 'NumberVal':
-            if (assigneetype == 'RealVal') {
-                assigneetype = 'NumberVal';
-                (valueside as NumberVal).value = Math.floor((valueside as NumberVal).value);
-                valueside.type = assigneetype;
-            }
-            break;
-        case 'RealVal':
-            if (assigneetype == 'NumberVal') {
-                assigneetype = 'RealVal';
-                valueside.type = 'RealVal';
-            }
-            break;
-    }
+    const assigneetype = valueside.type as ValueType;
 
     if (assigneetype == vartype || vartype == 'NullVal') {
         return env.assignVar(varname.symbol, valueside);
@@ -568,23 +511,7 @@ function evaluateAttributeAssignment(node: AssignmentExpr, env: Environment): Ru
     let valueside = evaluate(node.value, env);
 
     const vartype = lookupVar(node, varname, objEnv).type as ValueType as string;
-    let assigneetype = valueside.type;
-
-    switch (vartype) {
-        case 'NumberVal':
-            if (assigneetype == 'RealVal') {
-                assigneetype = 'NumberVal';
-                (valueside as NumberVal).value = Math.floor((valueside as NumberVal).value);
-                valueside.type = assigneetype;
-            }
-            break;
-        case 'RealVal':
-            if (assigneetype == 'NumberVal') {
-                assigneetype = 'RealVal';
-                valueside = valueside as RealVal;
-            }
-            break;
-    }
+    const assigneetype = valueside.type;
 
     if (assigneetype == vartype) {
         return objEnv.assignVar(varname, valueside);
@@ -666,23 +593,18 @@ function evaluateBinaryExpr(binop: BinaryExpr, env: Environment): RuntimeVal {
         return v;
     } else {
         //check if both are numeric values
-        if (leftHand.type != 'RealVal' && leftHand.type != 'NumberVal') {
+        if (leftHand.type != 'NumberVal') {
             throw reportError('Tentativa de fazer operação numérica com valor não numérico: ' + leftHand.type, binop.line);
         }
-        if (rightHand.type != 'RealVal' && rightHand.type != 'NumberVal') {
+        if (rightHand.type != 'NumberVal') {
             throw reportError('Tentativa de fazer operação numérica com valor não numérico: ' + rightHand.type, binop.line);
         }
 
-        const left = leftHand as RealVal;
-        const right = rightHand as RealVal;
+        const left = leftHand as NumberVal;
+        const right = rightHand as NumberVal;
         const v = evaluateNumericBinaryExpr(left, right, binop.operator);
 
-        let result;
-        if (leftHand.type == 'NumberVal' || rightHand.type == 'NumberVal') {
-            v.value = Math.floor(v.value);
-            result = v as unknown;
-            result = result as NumberVal;
-        } else result = v;
+        const result = v;
         return result;
     }
 }
@@ -703,7 +625,7 @@ function evaluateLogicalBinaryExpr(left: RuntimeVal, right: RuntimeVal, op: stri
     return { type: 'BooleanVal', value: false } as BooleanVal;
 }
 
-function evaluateNumericBinaryExpr(left: RealVal, right: RealVal, op: string): RealVal {
+function evaluateNumericBinaryExpr(left: NumberVal, right: NumberVal, op: string): NumberVal {
     let result = 0;
     switch (op) {
         case '+':
@@ -728,7 +650,7 @@ function evaluateNumericBinaryExpr(left: RealVal, right: RealVal, op: string): R
             result = Math.pow(left.value, right.value);
             break;
     }
-    return { type: 'RealVal', value: result } as RealVal;
+    return { type: 'NumberVal', value: result } as NumberVal;
 }
 
 let outputBuffer = '';
