@@ -129,7 +129,7 @@ export interface UnaryExpr extends Expr {
 export interface ConvertExpr extends Expr {
     kind: 'ConvertExpr';
     value: Expr;
-    type: ValueType;
+    type: string;
 }
 
 export interface BinaryExpr extends Expr {

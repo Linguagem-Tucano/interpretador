@@ -547,26 +547,10 @@ export default class Parser {
         this.eatOnly(TokenType.LParen, "Esperava um '('");
         const value = this.parseExpr();
         this.eatOnly(TokenType.Para, "Esperava um 'para'");
-        const typeToken = this.advance();
-        let type: ValueType;
-        switch (typeToken.type) {
-            case TokenType.Int:
-                type = 'NumberVal';
-                break;
-            case TokenType.Texto:
-                type = 'StringVal';
-                break;
-            case TokenType.Logico:
-                type = 'BooleanVal';
-                break;
-            case TokenType.Var:
-                type = 'NullVal';
-                break;
-            default:
-                throw reportError('Esperava um tipo válido de variável. Recebi: ' + typeToken.value, this.at().line);
-        }
+        const typeToken = this.eatOnly(TokenType.Identifier, "Esperava um tipo");
+        const type: ValueType = "NullVal";
         this.eatOnly(TokenType.RParen, "Esperava um ')'");
-        return { kind: 'ConvertExpr', value, type, line: this.at().line } as ConvertExpr;
+        return { kind: 'ConvertExpr', value, type:typeToken.value, line: this.at().line } as ConvertExpr;
     }
 
     private parseUnaryExpr(): Expr {

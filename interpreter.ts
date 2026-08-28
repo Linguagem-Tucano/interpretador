@@ -122,10 +122,10 @@ function evaluateUnaryExpr(node: UnaryExpr, env: Environment): RuntimeVal {
 function evaluateConvertExpr(node: ConvertExpr, env: Environment): RuntimeVal {
     const value = evaluate(node.value, env);
     const firstType = value.type as ValueType;
-    const desiredType = node.type as ValueType;
+    const desiredType = node.type as string;
 
     switch (desiredType) {
-        case 'StringVal':
+        case 'texto':
             if (firstType == 'NumberVal') {
                 return { type: 'StringVal', value: value.value.toString() } as StringVal;
             } else if (firstType == 'BooleanVal') {
@@ -137,7 +137,7 @@ function evaluateConvertExpr(node: ConvertExpr, env: Environment): RuntimeVal {
             } else {
                 throw reportError('Não é possível converter ' + firstType + ' para texto.', node.line);
             }
-        case 'NumberVal':
+        case 'numero':
             if (firstType == 'StringVal') {
                 const num = parseInt(value.value, 10);
                 if (isNaN(num)) {
@@ -149,7 +149,7 @@ function evaluateConvertExpr(node: ConvertExpr, env: Environment): RuntimeVal {
             } else {
                 throw reportError('Não é possível converter ' + firstType + ' para inteiro.', node.line);
             }
-        case 'BooleanVal':
+        case 'logico':
             if (firstType == 'StringVal') {
                 return { type: 'BooleanVal', value: value.value == 'verdadeiro' ? true : false } as BooleanVal;
             } else if (firstType == 'NumberVal') {
