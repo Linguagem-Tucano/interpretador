@@ -183,6 +183,15 @@ export function setFillStyle(style: string) {
     }
 }
 
+export function setColor(color:string) {
+    if (ctx != undefined) {
+        ctx.fillStyle = color;
+        ctx.strokeStyle = color;
+    } else {
+        throw 'Ambiente não suporta gráficos';
+    }
+}
+
 export function saveCanvas() {
     if (ctx != undefined) {
         const dataURL = ctx.canvas.toDataURL('image/png');

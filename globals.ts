@@ -2,7 +2,7 @@ import Environment from './environment.ts';
 import { BooleanVal, MK_NULL, ObjectVal, RuntimeVal } from './values.ts';
 import { Function } from './function.ts';
 import { ArgumentExpr, Body } from './ast.ts';
-import { clearCanvas, drawImage, drawLine, drawRectangle, drawText, setLineWidth } from './main.ts';
+import { clearCanvas, drawImage, drawLine, drawRectangle, drawText, setColor, setLineWidth } from './main.ts';
 import { appendOutput, clearOutputBuffer, flushOutputBuffer } from './interpreter.ts';
 
 export function setupEnv(env: Environment) {
@@ -182,6 +182,14 @@ export function setupEnv(env: Environment) {
         return MK_NULL();
     };
     telaEnv.functions.set('imprimir', imprima);
+
+    const cor = new Function({} as Body, [arg]);
+    imprima.call = function (_env: Environment) {
+        const text = _env.lookupVar('text');
+        setColor(text.value as string);
+        return MK_NULL();
+    };
+    telaEnv.functions.set('cor', cor);
 
     const tela = { value: 'Tela', className: 'Tela', env: telaEnv } as ObjectVal;
 
