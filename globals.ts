@@ -184,7 +184,7 @@ export function setupEnv(env: Environment) {
     telaEnv.functions.set('imprimir', imprima);
 
     const cor = new Function({} as Body, [arg]);
-    imprima.call = function (_env: Environment) {
+    cor.call = function (_env: Environment) {
         const text = _env.lookupVar('text');
         setColor(text.value as string);
         return MK_NULL();
