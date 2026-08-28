@@ -139,7 +139,7 @@ function evaluateConvertExpr(node: ConvertExpr, env: Environment): RuntimeVal {
                 const strList = list.value.map((item) => item.value).join(', ');
                 return { type: 'StringVal', value: strList } as StringVal;
             } else {
-                throw reportError('Não é possível converter ' + firstType + ' para caractere.', node.line);
+                throw reportError('Não é possível converter ' + firstType + ' para texto.', node.line);
             }
         case 'NumberVal':
             if (firstType == 'StringVal') {
@@ -473,7 +473,7 @@ function evaluateVarDecl(variable: VarDecl, env: Environment): RuntimeVal {
                 (value as RealVal).value = Math.floor((value as RealVal).value);
             }
             break;
-        case 'caractere':
+        case 'texto':
             type = 'StringVal';
             break;
         case 'real':
@@ -490,7 +490,7 @@ function evaluateVarDecl(variable: VarDecl, env: Environment): RuntimeVal {
             type = 'ListVal';
             listType = 'NumberVal';
             break;
-        case 'caractere[]':
+        case 'texto[]':
             type = 'ListVal';
             listType = 'StringVal';
             break;
@@ -756,7 +756,7 @@ function evaluateProgram(program: Program, env: Environment): RuntimeVal {
     outputBuffer = '';
     let lastEvaluated: RuntimeVal = { type: 'NullVal', value: 'nulo' } as NullVal;
     GLOBAL_ENV = env;
-    console.log(program.body);
+
     lastEvaluated = evaluate(program.body, env);
 
     if (outputBuffer != '') {

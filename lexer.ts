@@ -45,7 +45,7 @@ export enum TokenType {
 
     Var,
     Int,
-    Caractere,
+    Texto,
     RealWord,
     Logico,
     Se,
@@ -73,7 +73,7 @@ export enum TokenType {
 const reservedWordsObj = {
     var: TokenType.Var,
     int: TokenType.Int,
-    caractere: TokenType.Caractere,
+    texto: TokenType.Texto,
     real: TokenType.RealWord,
     logico: TokenType.Logico,
     global: TokenType.Global,

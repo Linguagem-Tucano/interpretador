@@ -3,7 +3,7 @@ import { ArgumentExpr, AssignmentExpr, AttributeLookup, BinaryExpr, CallLookup, 
 import { lexerError, Token, tokenize, TokenType } from './lexer.ts';
 import { ValueType } from './values.ts';
 import { reportError } from './main.ts';
-import { Class } from './class.ts';
+//import { Class } from './class.ts';
 
 export default class Parser {
     private tokens: Token[] = [];
@@ -55,7 +55,7 @@ export default class Parser {
         switch (this.at().type) {
             case TokenType.Var:
                 return this.parseVarDecl();
-            case TokenType.Caractere:
+            case TokenType.Texto:
                 return this.parseVarDecl();
             case TokenType.Int:
                 return this.parseVarDecl();
@@ -241,7 +241,7 @@ export default class Parser {
                     case TokenType.Int:
                         returnType = 'NumberVal';
                         break;
-                    case TokenType.Caractere:
+                    case TokenType.Texto:
                         returnType = 'StringVal';
                         break;
                     case TokenType.RealWord:
@@ -275,7 +275,7 @@ export default class Parser {
                         case TokenType.Int:
                             argtype = 'NumberVal';
                             break;
-                        case TokenType.Caractere:
+                        case TokenType.Texto:
                             argtype = 'StringVal';
                             break;
                         case TokenType.RealWord:
@@ -305,7 +305,7 @@ export default class Parser {
                     case TokenType.Int:
                         returnType = 'NumberVal';
                         break;
-                    case TokenType.Caractere:
+                    case TokenType.Texto:
                         returnType = 'StringVal';
                         break;
                     case TokenType.RealWord:
@@ -564,7 +564,7 @@ export default class Parser {
             case TokenType.Int:
                 type = 'NumberVal';
                 break;
-            case TokenType.Caractere:
+            case TokenType.Texto:
                 type = 'StringVal';
                 break;
             case TokenType.RealWord:
