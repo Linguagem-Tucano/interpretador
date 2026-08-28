@@ -192,9 +192,10 @@ export function saveCanvas() {
     }
 }
 
-export function drawRectangle(x: number, y: number, w: number, h: number) {
+export function drawRectangle(x: number, y: number, w: number, h: number, fill: string) {
     if (ctx != undefined) {
         ctx.rect(x, y, w, h);
+        fill == "preencher" ? ctx.fill() : ctx.stroke();
     } else {
         throw 'Ambiente não suporta gráficos';
     }

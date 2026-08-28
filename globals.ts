@@ -131,13 +131,14 @@ export function setupEnv(env: Environment) {
     };
     telaEnv.functions.set('desenhar', desenhar);
 
-    const retangulo = new Function({} as Body, [xarg, yarg, warg, harg]);
+    const retangulo = new Function({} as Body, [xarg, yarg, warg, harg, imgarg]);
     retangulo.call = function (_env: Environment) {
         const x = _env.lookupVar('x');
         const y = _env.lookupVar('y');
         const w = _env.lookupVar('w');
         const h = _env.lookupVar('h');
-        drawRectangle(x.value as number, y.value as number, w.value as number, h.value as number);
+        const fill = _env.lookupVar('img');
+        drawRectangle(x.value as number, y.value as number, w.value as number, h.value as number, fill.value as string);
         return MK_NULL();
     };
     telaEnv.functions.set('retangulo', retangulo);
