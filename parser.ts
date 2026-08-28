@@ -219,30 +219,15 @@ export default class Parser {
         const identifier = this.eatOnly(TokenType.Identifier, 'Esperava um nome de função').value; //get identifier
         this.eatOnly(TokenType.LParen, "Esperava um '('.");
         const args = [] as ArgumentExpr[];
-        let returnType = 'NullVal' as ValueType;
+        let returnType = 'NullVal' as string;
         if (this.at().type == TokenType.RParen) {
             this.advance();
             //Sem argumentos
             if (this.at().type == TokenType.DoisPontos) {
                 this.advance(); //go past :
                 //com tipo de retorno
-                const tipo = this.advance();
-                switch (tipo.type) {
-                    case TokenType.Int:
-                        returnType = 'NumberVal';
-                        break;
-                    case TokenType.Texto:
-                        returnType = 'StringVal';
-                        break;
-                    case TokenType.Logico:
-                        returnType = 'BooleanVal';
-                        break;
-                    case TokenType.Var:
-                        returnType = 'NullVal';
-                        break;
-                    default:
-                        throw reportError('Esperava um tipo válido de variável. Recebi: ' + returnType, this.at().line);
-                }
+                const tipo = this.eatOnly(TokenType.Identifier, 'Esperava um tipo de variável');
+                returnType = tipo.value;
             } else {
                 //sem tipo de retorno
                 returnType = 'NullVal';

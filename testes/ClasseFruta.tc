@@ -1,7 +1,7 @@
 classe Fruta {
-  caractere nome
+  var nome: texto
 
-  funcao construtor(n:caractere) {
+  funcao construtor(n) {
     isso.nome = n
     retorna isso
   }
@@ -10,6 +10,6 @@ classe Fruta {
   }
 }
 
-var uva = novo Fruta("uva") --criar um objeto fruta com nome uva
-var melao = novo Fruta("melao") --criar um objeto fruta com nome melao
+var uva: Fruta = novo Fruta("uva") --criar um objeto fruta com nome uva
+var melao: Fruta = novo Fruta("melao") --criar um objeto fruta com nome melao
 melao.falarNome() --o melao vai escrever "melao" na tela pois é essa instancia que está executando.

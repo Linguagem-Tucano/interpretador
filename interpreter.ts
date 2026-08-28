@@ -91,7 +91,7 @@ function evaluateSwitchStmt(node: SwitchStmt, env: Environment): RuntimeVal {
 
     const mestre = evaluate(node.value, env).value;
 
-    const body = mapaResolvido.get(mestre) ?? ({kind: 'Body', lines: [], line: node.line} as Body);
+    const body = mapaResolvido.get(mestre) ?? ({ kind: 'Body', lines: [], line: node.line } as Body);
 
     const newEnv = new Environment(env);
 
@@ -392,7 +392,7 @@ function evaluateComparison(node: ComparatorExpr, env: Environment): RuntimeVal 
             case '>=':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
-                if ((right.type == 'NumberVal') && (left.type == 'NumberVal')) {
+                if (right.type == 'NumberVal' && left.type == 'NumberVal') {
                     result.value = left.value >= right.value;
                     break;
                 } else {
@@ -401,7 +401,7 @@ function evaluateComparison(node: ComparatorExpr, env: Environment): RuntimeVal 
             case '<=':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
-                if ((right.type == 'NumberVal') && (left.type == 'NumberVal')) {
+                if (right.type == 'NumberVal' && left.type == 'NumberVal') {
                     result.value = left.value <= right.value;
                     break;
                 } else {
@@ -410,7 +410,7 @@ function evaluateComparison(node: ComparatorExpr, env: Environment): RuntimeVal 
             case '>':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
-                if ((right.type == 'NumberVal') && (left.type == 'NumberVal')) {
+                if (right.type == 'NumberVal' && left.type == 'NumberVal') {
                     result.value = left.value > right.value;
                     break;
                 } else {
@@ -419,7 +419,7 @@ function evaluateComparison(node: ComparatorExpr, env: Environment): RuntimeVal 
             case '<':
                 left = evaluate(node.left, env);
                 right = evaluate(node.right, env);
-                if ((right.type == 'NumberVal') && (left.type == 'NumberVal')) {
+                if (right.type == 'NumberVal' && left.type == 'NumberVal') {
                     result.value = left.value < right.value;
                     break;
                 } else {
@@ -453,6 +453,10 @@ function evaluateVarDecl(variable: VarDecl, env: Environment): RuntimeVal {
         case 'logico':
             type = 'BooleanVal';
             break;
+        case 'numero[]':
+            type = 'ListVal';
+            listType = 'NumberVal';
+            break;
         case 'texto[]':
             type = 'ListVal';
             listType = 'StringVal';
@@ -461,6 +465,10 @@ function evaluateVarDecl(variable: VarDecl, env: Environment): RuntimeVal {
             type = 'ListVal';
             listType = 'BooleanVal';
             break;
+        default:
+            if (env.hasClass(variable.type)) {
+                type = 'ObjectVal';
+            }
     }
 
     if (hasValue && type != assignedtype) {

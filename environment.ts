@@ -81,6 +81,16 @@ export default class Environment {
         return this.parent.hasFunc(funcname);
     }
 
+    public hasClass(classname: string): boolean {
+        if (this.classes.has(classname)) {
+            return true;
+        }
+        if (this.parent == undefined) {
+            return false;
+        }
+        return this.parent.hasClass(classname);
+    }
+
     public lookupFunc(funcname: string): Function {
         const env = this.resolveFunc(funcname);
         return env.functions.get(funcname) as Function;
