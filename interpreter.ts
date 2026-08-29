@@ -139,7 +139,7 @@ function evaluateConvertExpr(node: ConvertExpr, env: Environment): RuntimeVal {
             }
         case 'numero':
             if (firstType == 'StringVal') {
-                const num = parseInt(value.value, 10);
+                const num = parseFloat(value.value);
                 if (isNaN(num)) {
                     throw reportError("Não é possível converter '" + value.value + "' para número.", node.line);
                 }
