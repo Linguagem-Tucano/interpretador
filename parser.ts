@@ -382,7 +382,19 @@ export default class Parser {
     }
 
     private parseExpr(): Expr {
-        return this.parseConcatenateExpr();
+        return this.parseLogicalExpr();
+    }
+
+    private parseLogicalExpr(): Expr {
+        let left = this.parseConcatenateExpr();
+        //if (this.at().type==TokenType.BinaryOperator) {
+        while (this.at().value == 'e' || this.at().value == 'ou' || this.at().value == 'xou') {
+            const operator = this.advance().value;
+            const right = this.parseConcatenateExpr();
+            left = { kind: 'BinaryExpr', left, right, operator, line: this.at().line } as BinaryExpr;
+        }
+        //}
+        return left;
     }
 
     private parseConcatenateExpr(): Expr {
@@ -417,6 +429,8 @@ export default class Parser {
         return this.parseComparatorExpr();
     }
 
+
+
     private parseComparatorExpr(): Expr {
         const left = this.parseAssignmentExpr();
         if (this.at().type == TokenType.ComparatorOperator) {
@@ -428,24 +442,12 @@ export default class Parser {
     }
 
     private parseAssignmentExpr(): Expr {
-        const left = this.parseLogicalExpr();
+        const left = this.parseAdditiveExpr();
         if (this.at().type == TokenType.Assignment) {
             this.advance(); //advance past =
-            const value = this.parseLogicalExpr();
+            const value = this.parseAdditiveExpr();
             return { value, assigne: left, kind: 'AssignmentExpr', line: this.at().line } as AssignmentExpr;
         }
-        return left;
-    }
-
-    private parseLogicalExpr(): Expr {
-        let left = this.parseAdditiveExpr();
-        //if (this.at().type==TokenType.BinaryOperator) {
-        while (this.at().value == 'e' || this.at().value == 'ou' || this.at().value == 'xou') {
-            const operator = this.advance().value;
-            const right = this.parseAdditiveExpr();
-            left = { kind: 'BinaryExpr', left, right, operator, line: this.at().line } as BinaryExpr;
-        }
-        //}
         return left;
     }
 
