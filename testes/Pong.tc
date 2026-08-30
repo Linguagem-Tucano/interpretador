@@ -1,0 +1,95 @@
+classe Jogo {
+    var jogando: logico = verdadeiro
+    var pontos: numero = 0
+    var larguraTela: numero = 1080
+    var alturaTela: numero = 720
+    var larguraBarra: numero = 15
+
+    funcao construtor() {retorna isso}
+
+    funcao desenhar() {
+        Tela.cor("#000")
+        Tela.retangulo(0,0,larguraTela,alturaTela,"preencher")
+        Tela.cor("#fff")
+        Tela.retangulo(larguraTela/2-larguraBarra/2, 0, larguraBarra, alturaTela, "preencher")
+    }
+}
+
+classe Barra {
+    var larguraTela: numero = 1080
+    var alturaTela: numero = 720
+    var larguraBarra: numero = 15
+    var alturaBarra: numero = alturaTela / 6
+    var x: numero = 0
+    var y: numero = alturaTela/2-alturaBarra/2
+
+    funcao construtor(x) {
+        isso.x = x
+        retorna isso
+    }
+
+    funcao desenhar() {
+        Tela.cor("#fff")
+        Tela.retangulo(x,y,larguraBarra,alturaBarra,"preencher")
+    }
+
+    funcao mover(y) {
+        isso.y = y-alturaBarra/2
+    }
+}
+
+classe Bola {
+    var x: numero = 0
+    var y: numero = 0
+    var raio: numero = 12
+    var velocidadeX: numero = 4
+    var velocidadeY: numero = 3
+    var velocidadeBase: numero = 4
+    var larguraTela: numero = 1080
+    var alturaTela: numero = 720
+
+    funcao construtor() {
+        isso.x = isso.larguraTela / 2
+        isso.y = isso.alturaTela / 2
+        isso.velocidadeX = -isso.velocidadeBase
+        isso.velocidadeY = isso.velocidadeBase * 0.01
+        retorna isso
+    }
+
+    funcao reiniciar() {
+        isso.x = isso.larguraTela / 2
+        isso.y = isso.alturaTela / 2
+        isso.velocidadeX = isso.velocidadeBase
+        isso.velocidadeY = (1 - 0.5) * 2 * isso.velocidadeBase * 0.75
+    }
+
+    funcao atualizar() {
+        isso.x = isso.x + isso.velocidadeX
+        isso.y = isso.y + isso.velocidadeY
+    }
+
+    funcao desenhar() {
+        Tela.cor("#fff")
+        
+        Tela.retangulo(x-raio, y-raio, raio*2, raio*2, "preencher")
+    }
+}
+
+
+var jogo: Jogo = novo Jogo()
+var jogador: Barra = novo Barra(50)
+var inimigo: Barra = novo Barra(1080-50)
+var bola: Bola = novo Bola()
+
+funcao atualizar(dt) {
+    Tela.limpar()
+    jogo.desenhar()
+    jogador.desenhar()
+    inimigo.desenhar()
+    bola.atualizar()
+    bola.desenhar()
+}
+
+funcao mousemoveu(x,y) {
+    jogador.mover(converta(y para numero))
+}

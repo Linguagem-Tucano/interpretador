@@ -472,10 +472,10 @@ export default class Parser {
     }
 
     private parseExponentialExpr(): Expr {
-        let left = this.parseAttributeLookup();
+        let left = this.parseConvertExpr();
         while (this.at().value == '^') {
             const operator = this.advance().value;
-            const right = this.parseAttributeLookup();
+            const right = this.parseConvertExpr();
             left = { kind: 'BinaryExpr', left, right, operator, line: this.at().line } as BinaryExpr;
         }
         return left;
@@ -491,38 +491,7 @@ export default class Parser {
     //    return this.parsePrimaryExpr();
     //}
 
-    private parseAttributeLookup(): Expr {
-        let expr = this.parseConvertExpr();
 
-        if (expr.kind != 'Identifier') return expr;
-        const newexpr = expr as Identifier;
-        let property = '';
-        while (true) {
-            if (this.at().type == TokenType.Ponto) {
-                this.advance(); // go past .
-                property = this.eatOnly(TokenType.Identifier, "Expected property name after '.'").value;
-                expr = { kind: 'AttributeLookup', symbol: newexpr.symbol, lookup: property, line: this.at().line } as AttributeLookup;
-            } else if (this.at().type == TokenType.LParen) {
-                this.advance();
-
-                const args = [] as Expr[];
-                while (this.at().type != TokenType.RParen && this.at().type != TokenType.EOF) {
-                    if (this.at().type != TokenType.Virgula) {
-                        const s = this.parseStmt();
-                        args.push(s);
-                    } else {
-                        this.advance();
-                    }
-                }
-                this.advance(); //go past the )
-                expr = { kind: 'CallLookup', symbol: newexpr.symbol, call: property, args, line: this.at().line } as CallLookup;
-            } else {
-                break;
-            }
-        }
-
-        return expr;
-    }
 
     private parseConvertExpr(): Stmt {
         // converter(expr para tipo)
@@ -557,6 +526,8 @@ export default class Parser {
         }
     }
 
+    
+
     private parseListExpr(): Expr {
         if (this.at().type == TokenType.LColch) {
             this.advance();
@@ -572,7 +543,40 @@ export default class Parser {
             this.advance();
             return { kind: 'ListLiteral', values: list, line: this.at().line } as ListLiteral;
         }
-        return this.parsePrimaryExpr();
+        return this.parseAttributeLookup();
+    }
+
+    private parseAttributeLookup(): Expr {
+        let expr = this.parsePrimaryExpr();
+
+        if (expr.kind != 'Identifier') return expr;
+        const newexpr = expr as Identifier;
+        let property = '';
+        while (true) {
+            if (this.at().type == TokenType.Ponto) {
+                this.advance(); // go past .
+                property = this.eatOnly(TokenType.Identifier, "Expected property name after '.'").value;
+                expr = { kind: 'AttributeLookup', symbol: newexpr.symbol, lookup: property, line: this.at().line } as AttributeLookup;
+            } else if (this.at().type == TokenType.LParen) {
+                this.advance();
+
+                const args = [] as Expr[];
+                while (this.at().type != TokenType.RParen && this.at().type != TokenType.EOF) {
+                    if (this.at().type != TokenType.Virgula) {
+                        const s = this.parseStmt();
+                        args.push(s);
+                    } else {
+                        this.advance();
+                    }
+                }
+                this.advance(); //go past the )
+                expr = { kind: 'CallLookup', symbol: newexpr.symbol, call: property, args, line: this.at().line } as CallLookup;
+            } else {
+                break;
+            }
+        }
+
+        return expr;
     }
 
     private parsePrimaryExpr(): Expr {
