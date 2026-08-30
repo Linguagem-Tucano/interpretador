@@ -32,6 +32,12 @@ export function setupEnv(env: Environment) {
 
     mathEnv.functions.set('raiz', sqrtFn);
 
+    const rng = new Function({} as Body, []);
+    rng.call = function (env: Environment) {
+        return { type: 'NumberVal', value: Math.random() } as RuntimeVal;
+    };
+    mathEnv.functions.set('aleatorio', rng);
+
     const math = { value: 'Matemática', className: 'Matemática', env: mathEnv } as ObjectVal;
 
     env.declareVar('mat', math, 'ObjectVal');
