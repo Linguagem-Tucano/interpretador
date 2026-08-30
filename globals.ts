@@ -40,7 +40,7 @@ export function setupEnv(env: Environment) {
 
     const math = { value: 'Matemática', className: 'Matemática', env: mathEnv } as ObjectVal;
 
-    env.declareVar('mat', math, 'ObjectVal');
+    env.declareVar('Matematica', math, 'ObjectVal');
 
     const arg = { kind: 'ArgumentExpr', identifier: 'text', type: 'NullVal' } as ArgumentExpr;
     const escreva = new Function({} as Body, [arg]);
